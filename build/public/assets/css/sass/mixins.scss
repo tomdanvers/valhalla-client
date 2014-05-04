@@ -1,0 +1,156 @@
+@mixin clearfix {
+  &:after {
+    content: "";
+    display: block;
+    clear: both;
+  }
+}
+
+@mixin gradient($from, $to) {
+  /* fallback/image non-cover color */
+  /* background-color: $from; */
+
+  /* Firefox 3.6+ */
+  background-image: -moz-linear-gradient($from, $to);
+
+  /* Safari 4+, Chrome 1+ */
+  background-image: -webkit-gradient(linear, 0% 0%, 0% 100%, from($from), to($to));
+
+  /* Safari 5.1+, Chrome 10+ */
+  background-image: -webkit-linear-gradient($from, $to);
+
+  /* Opera 11.10+ */
+  background-image: -o-linear-gradient($from, $to);
+}
+
+@mixin background-image-retina($file, $width, $height) {
+  background-image: url('/assets/img/sd/' + $file);
+
+  @media (-webkit-min-device-pixel-ratio: 2), (-moz-min-device-pixel-ratio: 2) {
+    & {
+      background-image: url('/assets/img/hd/' + $file);
+      -webkit-background-size: $width $height;
+    }
+  }
+}
+
+@mixin transform2D($scaleX, $scaleY, $originX, $originY) {
+  transform: scale($scaleX, $scaleY);
+  transform-origin:$originX $originY;
+  -ms-transform: scale($scaleX, $scaleY); /* IE 9 */
+  -ms-transform-origin:$originX $originY; /* IE 9 */
+  -webkit-transform: scale($scaleX, $scaleY); /* Chrome, Safari, Opera */
+  -webkit-transform-origin:$originX $originY; /* Chrome, Safari, Opera */
+}
+
+@mixin background-default{
+  background-repeat: no-repeat;
+  background-position: center center;
+  // background-attachment: fixed;
+
+  -webkit-background-size: cover;
+  -moz-background-size: cover;
+  -o-background-size: cover;
+  background-size: cover;
+
+  -ms-behavior: url(/backgroundsize.min.htc);
+}
+
+@mixin placeholder {
+  ::-webkit-input-placeholder {@content}
+  :-moz-placeholder           {@content}
+  ::-moz-placeholder          {@content}
+  :-ms-input-placeholder      {@content}
+}
+
+@mixin background-opacity($color, $opacity: 1) {
+    background-color: $color; /* The Fallback */
+    background-color: rgba($color, $opacity);
+}
+
+@mixin box-sizing-border {
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  box-sizing: border-box;
+}
+
+@font-face {
+  font-family: 'icons';
+  src:url('/assets/fonts/icons/icons.eot?g5w1xq');
+  src:url('/assets/fonts/icons/icons.eot?#iefixg5w1xq') format('embedded-opentype'),
+    url('/assets/fonts/icons/icons.woff?g5w1xq') format('woff'),
+    url('/assets/fonts/icons/icons.ttf?g5w1xq') format('truetype'),
+    url('/assets/fonts/icons/icons.svg?g5w1xq#icons') format('svg');
+  font-weight: normal;
+  font-style: normal;
+}
+
+[class^="icon-"], [class*=" icon-"] {
+  font-family: 'icons';
+  speak: none;
+  font-style: normal;
+  font-weight: normal;
+  font-variant: normal;
+  text-transform: none;
+  line-height: 1;
+  background-color: transparent;
+
+  /* Better Font Rendering =========== */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  //text-shadow: rgba(0,0,0,.01) 0 0 1px;
+}
+
+.icon-search:before {
+  margin-left: .5em;
+  content: "\e600";
+}
+.icon-vine:before {
+  content: "\e601";
+}
+.icon-facebook:before {
+  content: "\e602";
+}
+.icon-twitter:before {
+  content: "\e603";
+}
+.icon-instagram:before {
+  content: "\e607";
+}
+.icon-google:before {
+  content: "\e608";
+}
+.icon-link:before {
+  content: "\e60a";
+}
+.icon-arrow-up:before {
+  content: "\e604";
+}
+.icon-arrow-right:before {
+  content: "\e605";
+  font-size: 7px;
+}
+.icon-arrow-down:before {
+  content: "\e606";
+}
+.icon-camera:before {
+  content: "\e609";
+  font-size: 30px;
+}
+.icon-close:before {
+  content: "\e60c";
+  font-size: 2em;
+  font-weight: lighter;
+}
+.icon-add:before {
+  content: "\e60f";
+  //font-size: 2em;
+  //font-weight: lighter;
+}
+// .icon-valid:before {
+//   content: "\e60d";
+// }
+
+// .icon-invalid:before {
+//   content: "\e60e";
+// }

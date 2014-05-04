@@ -1,0 +1,75 @@
+.post {
+  box-shadow: 0 0 5px rgba(0,0,0,.5);
+
+  .post-header {
+    @include background-default();
+    border: $normal solid white;
+
+    .post-header-content {
+      background-color: rgba(0,0,0,.5);
+      background-image: url(/assets/img/bg-repeat.png);
+
+      .post-title {
+        line-height: .9em;
+        text-shadow: 0 0 5px rgba(0,0,0,1);
+
+        padding-top: 50px;
+        transition: padding-top 1s;
+      }
+    }
+
+    .post-header-overlay {
+      background-color: rgba(0,0,0,.75);
+    }
+  }
+
+  .post-details {
+    background-color:#FFF;
+    color: #333;
+    display: block;
+  }
+}
+
+.js {
+  .post {
+    .post-details {
+      overflow: hidden;
+      display: none;
+      //max-height: 0;
+      //transition: max-height 1s linear;
+    }
+
+    &.show {
+      .post-details {
+        display: block;
+        //max-height: 3000px;
+        //transition: max-height 1s linear;
+      }
+
+      .post-header-content {
+        background-color: rgba(0,0,0,.25);
+        transition: background-color 1s;
+
+          .post-title {
+            padding-top: 125px;
+            transition: padding-top 1s;
+          }
+      }
+    }
+  }
+}
+
+.no-touch {
+  .post {
+    .post-header-content {
+      background-color: rgba(0,0,0,.75);
+      transition: background-color 1s;
+
+      &:hover{
+        background-color: rgba(0,0,0,.25);
+        transition: background-color 1s;
+      }
+    }
+
+  }
+}

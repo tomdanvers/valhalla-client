@@ -1,0 +1,14 @@
+$normal: 10px;
+$large: 20px;
+
+.l-p-normal {
+  padding: $normal;
+}
+
+.l-p-large {
+  padding: 30px 60px;
+}
+
+.l-gap-normal {
+  margin-bottom: $normal;
+}

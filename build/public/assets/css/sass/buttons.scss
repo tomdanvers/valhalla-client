@@ -1,0 +1,11 @@
+button, .button {
+  background-color: transparent;
+  border: none;
+  padding: 1px 6px;
+  text-transform: uppercase;
+  &:focus {
+    outline: none;
+  }
+  &:active,&:hover{
+  }
+}
