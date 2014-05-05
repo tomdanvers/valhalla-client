@@ -2,15 +2,17 @@ define(
   [
     'Phaser',
     'game/states/boot',
+    'game/states/connect',
     'game/states/test'
   ],
-  function(Phaser, Boot, Test){
+  function(Phaser, Boot, Connect, Test){
     'use strict';
 
     var game = new Phaser.Game(800, 550, Phaser.AUTO, 'valhalla');
 
     // Game States
     game.state.add('boot', new Boot());
+    game.state.add('connect', new Connect());
     game.state.add('test', new Test());
     //game.state.add('gameover', new GameOver());
     //game.state.add('menu', new Menu());

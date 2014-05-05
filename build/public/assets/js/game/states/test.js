@@ -2,9 +2,10 @@ define(
   [
     'Phaser',
     'io',
+    'game/managers/connection-manager',
     'game/objects/player'
   ],
-  function(Phaser, IO, Player) {
+  function(Phaser, IO, ConnectionManager, Player) {
     'use strict';
 
     function Test(game) {
@@ -15,10 +16,6 @@ define(
     Test.prototype.constructor = Test;
 
     Test.prototype.create = function() {
-
-
-
-      this.socket = IO.connect('http://54.186.210.165/');
 
       this.settings = this.game.cache.getJSON('settings');
       console.log(this.settings);
@@ -45,17 +42,32 @@ define(
       this.commands = [];
       this.game.input.keyboard.addCallbacks(this, this.inputKeyDown, this.inputKeyUp);
 
+      // Disconnect panel...
+      this.disconnectPanel = new Phaser.Graphics(this.game, 0, 0);
+      //this.disconnectPanel.lineStyle(2, 0x0000FF, 1); // width, color (0x0000FF), alpha (0 -> 1) // required settings
+      this.disconnectPanel.beginFill(0x000000, .75);
+      this.disconnectPanel.drawRect(0,0,this.game.width,this.game.height);
+      this.disconnectPanel.fixedToCamera = true;
+      this.disconnectPanel.visible = false;
+      this.game.add.existing(this.disconnectPanel)
       var that = this;
-      this.socket.on('connect', function (data) {
-        console.log('connect', that.socket)
-      });
-      this.socket.on('update', function (data) {
-          if(data.time < this.serverTime) return;
-          this.serverTime = data.time;
-          that.playersCheck(data.data.players);
-          that.playersUpdate(data.data.players);
-      });
+      ConnectionManager.onUpdate.add(function(data){
+        if(data.time < this.serverTime) return;
+        this.serverTime = data.time;
+        that.playersCheck(data.data.players);
+        that.playersUpdate(data.data.players);
+      }, this);
 
+      ConnectionManager.onDisconnect.add(this.onDisconnect, this);
+      ConnectionManager.onReconnect.add(this.onReconnect, this);
+    };
+
+    Test.prototype.onDisconnect = function(){
+      this.disconnectPanel.visible = true;
+    };
+
+    Test.prototype.onReconnect = function(){
+      this.disconnectPanel.visible = false;
     };
 
     Test.prototype.update = function() {
@@ -80,7 +92,7 @@ define(
     };
 
     Test.prototype.sendCommands = function(commands) {
-      this.socket.emit('commands', {time:this.serverTime, data:commands});
+      ConnectionManager.emit('commands', {time:this.serverTime, data:commands});
     };
 
     // ------------------------------------------------------------------------------------------------------------ PLAYERS CHECK
@@ -113,13 +125,13 @@ define(
           return 'existing';
         }
       };
-      return 'new'
+      return 'new';
     };
 
     Test.prototype.playerAdd = function(id, playerModel) {
-      var isPlayerCharacter = this.socket.socket.sessionid == id;
+      var isPlayerCharacter = ConnectionManager.sessionId == id;
       var player = new Player(this.game, id, playerModel, isPlayerCharacter, this.settings.player.width, this.settings.player.height);
-      console.log('ADD:',id);
+      console.log('ADD:', id, ConnectionManager.sessionId);
       this.players.push(player);
       this.playersMap[id] = player;
       this.levelContents.add(player);

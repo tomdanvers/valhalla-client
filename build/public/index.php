@@ -56,7 +56,7 @@ $version_number = '1.3.1';
                     assetRoot:'/assets/'
                 },
                 dev:{
-                    server:'http://54.186.210.165',
+                    server:'http://ec2-54-187-105-51.us-west-2.compute.amazonaws.com',
                     assetRoot:'/labs/valhalla/assets/'
                 }
             };

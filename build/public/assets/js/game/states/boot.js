@@ -17,6 +17,7 @@ define(
 
     Boot.prototype.preload = function() {
       this.game.load.crossOrigin = true;
+      this.load.crossOrigin = true;
       this.load.json('settings', environment.server+'/settings.json');
       this.load.image('tex_wall', environment.assetRoot+'img/texture_wall.jpg');
       this.load.image('tiles', environment.assetRoot+'img/tiles.png');
@@ -25,7 +26,7 @@ define(
 
     Boot.prototype.create = function() {
       this.game.input.maxPointers = 1;
-      this.game.state.start('test');
+      this.game.state.start('connect');
     };
 
     return Boot;
