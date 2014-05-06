@@ -17,6 +17,8 @@ define(
       ConnectionManager.connect();
       ConnectionManager.onConnect.add(this.onConnect, this);
       ConnectionManager.onConnecting.add(this.onConnecting, this);
+      ConnectionManager.onConnectFailed.add(this.onConnectFailed, this);
+      ConnectionManager.onConnectError.add(this.onConnectError, this);
     };
 
     Connect.prototype.onConnecting = function(){
@@ -27,6 +29,16 @@ define(
       console.log('Connect.onConnect()');
 
       this.game.state.start('test');
+    };
+
+    Connect.prototype.onConnectFailed = function(){
+      console.log('Connect.onConnectFailed()');
+
+    };
+
+    Connect.prototype.onConnectError = function(){
+      console.log('Connect.onConnectError()');
+
     };
 
     return Connect;

@@ -14,7 +14,7 @@ define(
         this.onConnect = new Phaser.Signal();
         this.onDisconnect = new Phaser.Signal();
         this.onConnectFailed = new Phaser.Signal();
-        this.onError = new Phaser.Signal();
+        this.onConnectError = new Phaser.Signal();
         this.onReconnectFailed = new Phaser.Signal();
         this.onReconnect = new Phaser.Signal();
         this.onReconnecting = new Phaser.Signal();
@@ -29,6 +29,7 @@ define(
       this.socket = IO.connect(environment.server);
       this.socket.on('connecting', this.onConnecting.dispatch);
       this.socket.on('connect_failed', this.onConnectFailed.dispatch);
+      this.socket.on('error', this.onConnectError.dispatch);
       this.socket.on('connect', function () {
         that.sessionId = that.socket.socket.sessionid;
         that.onConnect.dispatch();
