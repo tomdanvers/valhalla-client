@@ -32,24 +32,26 @@ define(
 
     function Player(game, id, model, isPlayerCharacter, width, height) {
           var bmd = new Phaser.BitmapData(game, 'player', width, height);
-          bmd.ctx.fillStyle = isPlayerCharacter ? '#00FF00' : '#FF0000';
+          bmd.ctx.fillStyle = isPlayerCharacter ? '#00FF00' : this.colourToHex(model.colour);
           bmd.ctx.fillRect(0, 0, width, height);
-          //console.log('Player', game, bmd);
-          Phaser.Image.call(this, game, 0, 0, bmd);
+          Phaser.Sprite.call(this, game, 0, 0, bmd);
 
           this.id = id;
           this.model = model;
-
-          game.physics.arcade.enable(this);
     };
 
-    Player.prototype = Object.create(Phaser.Image.prototype);
+    Player.prototype = Object.create(Phaser.Sprite.prototype);
     Player.prototype.constructor = Player;
 
     Player.prototype.init = function() {
     };
 
     Player.prototype.create = function() {
+    };
+
+    Player.prototype.colourToHex = function(c) {
+      var hex = c.toString(16);
+      return hex.length == 1 ? "0" + hex : hex;
     };
 
     return Player;

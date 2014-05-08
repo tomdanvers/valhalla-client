@@ -1,10 +1,10 @@
 dev:
     scheme: ftp
     host: ftp.tomdanvers.com
-    port: 22
+    port: 21
     user: tom_danvers
     pass: 3Z!wCuAv
     check: true
     path:
         local: build/public/
-        remote: /home/tom_danvers/tomdanvers.com/labs/valhalla/
+        remote: tomdanvers.com/labs/valhalla/

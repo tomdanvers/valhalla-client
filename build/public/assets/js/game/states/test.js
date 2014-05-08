@@ -139,8 +139,6 @@ define(
 
       if(isPlayerCharacter){
         this.game.camera.follow(player);
-        player.cameraOffset.x = this.game.width/2 - this.settings.player.width/2;
-        player.cameraOffset.y = this.game.height - this.settings.player.height;
         this.playerCharacter = player;
       }else if(this.playerCharacter !== undefined){
         this.levelContents.bringToTop(this.playerCharacter);
@@ -171,6 +169,10 @@ define(
         player = this.playersMap[model.id];
         player.x = model.x;
         player.y = model.y;
+        if(player === this.playerCharacter){
+          player.previousX = player.x;
+          player.previousY = player.y;
+        }
       };
     };
 
