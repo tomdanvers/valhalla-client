@@ -34,7 +34,11 @@ define(
           var bmd = new Phaser.BitmapData(game, 'player', width, height);
           bmd.ctx.fillStyle = isPlayerCharacter ? '#00FF00' : this.colourToHex(model.colour);
           bmd.ctx.fillRect(0, 0, width, height);
+          bmd.ctx.fillStyle = '#555555';
+          bmd.ctx.fillRect(width - 30, 5, 30, 15);
           Phaser.Sprite.call(this, game, 0, 0, bmd);
+
+          this.anchor.setTo(.5, 0)
 
           this.id = id;
           this.model = model;

@@ -32,7 +32,7 @@ define(
 
       this.game.cache.addTilemap('map',null,this.settings.map);
       this.tilemap = this.game.add.tilemap('map');
-      this.tilemap.addTilesetImage('floor', 'tiles', 32, 32, 0, 0, 1);
+      this.tilemap.addTilesetImage('tiles', 'tiles');
 
       this.levelContents = new Phaser.Group(this.game);
 
@@ -141,7 +141,7 @@ define(
         this.game.camera.follow(player);
         this.playerCharacter = player;
       }else if(this.playerCharacter !== undefined){
-        this.levelContents.bringToTop(this.playerCharacter);
+        //this.levelContents.bringToTop(this.playerCharacter);
       }
     };
 
@@ -167,13 +167,21 @@ define(
       for (var i = count - 1; i >= 0; i--) {
         model = playerModels[i];
         player = this.playersMap[model.id];
-        player.x = model.x;
-        player.y = model.y;
+        player.model = model;
+        if(player.x < player.model.x){
+          player.scale.x = 1;
+        }else if(player.x > player.model.x){
+          player.scale.x = -1;
+        }
+        player.x = player.model.x;
+        player.y = player.model.y;
+        player.levelY = player.model.levelY;
         if(player === this.playerCharacter){
           player.previousX = player.x;
           player.previousY = player.y;
         }
       };
+      this.levelContents.sort('levelY', Phaser.Group.SORT_ASCENDING);
     };
 
     return Test;
