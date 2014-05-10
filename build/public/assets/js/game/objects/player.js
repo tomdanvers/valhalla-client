@@ -38,7 +38,11 @@ define(
           bmd.ctx.fillRect(width - 30, 5, 30, 15);
           Phaser.Sprite.call(this, game, 0, 0, bmd);
 
-          this.anchor.setTo(.5, 0)
+          // this.anchor.setTo(.5, 0)
+
+
+
+          this.anchor.setTo(.5, 1)
 
           this.id = id;
           this.model = model;
