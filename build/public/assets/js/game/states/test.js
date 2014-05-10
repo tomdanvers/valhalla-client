@@ -168,9 +168,9 @@ define(
         model = playerModels[i];
         player = this.playersMap[model.id];
         player.model = model;
-        if(player.x < player.model.x){
+        if(player.model.facing > 0){
           player.scale.x = 1;
-        }else if(player.x > player.model.x){
+        }else{
           player.scale.x = -1;
         }
         player.x = player.model.x;
