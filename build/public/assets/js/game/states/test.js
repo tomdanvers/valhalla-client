@@ -180,6 +180,7 @@ define(
           player.previousX = player.x;
           player.previousY = player.y;
         }
+        player.alpha = player.model.health/this.settings.player.healthMax;
       };
       this.levelContents.sort('levelY', Phaser.Group.SORT_ASCENDING);
     };
