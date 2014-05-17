@@ -63,6 +63,7 @@ $version_number = '1.3.1';
             var environmentId = '<?php echo $environment_id ?>';
             var environment = environments[environmentId];
         </script>
+        <div id='valhalla' class="valhalla"></div>
         <?php echo $minified_js ? '<script src="assets/js/main.min.js?v='.$version_number.'" data-main="assets/js/main"></script>' : '<script src="assets/js/lib/require/require.js" data-main="assets/js/main"></script>'; ?>
     </body>
 </html>

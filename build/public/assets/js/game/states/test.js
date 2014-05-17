@@ -28,13 +28,16 @@ define(
 
       this.game.world.setBounds(0, 0, this.settings.map.width*32, this.settings.map.height*32);
 
-      this.game.add.tileSprite(0, 0, this.settings.map.width*32, this.settings.map.height*32, 'tex_wall');
+      this.game.add.tileSprite(0, -64, this.settings.map.width*32, this.settings.map.height*32, 'tex_wall');
 
       this.game.cache.addTilemap('map',null,this.settings.map);
       this.tilemap = this.game.add.tilemap('map');
       this.tilemap.addTilesetImage('tiles', 'tiles');
 
       this.levelContents = new Phaser.Group(this.game);
+
+      this.decoration = this.tilemap.createLayer('decoration');
+      this.levelContents.add(this.decoration);
 
       this.ground = this.tilemap.createLayer('floor');
       this.levelContents.add(this.ground);
@@ -168,11 +171,6 @@ define(
         model = playerModels[i];
         player = this.playersMap[model.id];
         player.model = model;
-        if(player.model.facing > 0){
-          player.scale.x = 1;
-        }else{
-          player.scale.x = -1;
-        }
         player.x = player.model.x;
         player.y = player.model.y;
         player.levelY = player.model.levelY;
@@ -180,7 +178,8 @@ define(
           player.previousX = player.x;
           player.previousY = player.y;
         }
-        player.alpha = player.model.health/this.settings.player.healthMax;
+        player.setFacing(player.model.facing);
+        player.setHealthValue(player.model.health/this.settings.player.healthMax);
       };
       this.levelContents.sort('levelY', Phaser.Group.SORT_ASCENDING);
     };

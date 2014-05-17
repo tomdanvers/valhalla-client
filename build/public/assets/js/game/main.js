@@ -8,7 +8,7 @@ define(
   function(Phaser, Boot, Connect, Test){
     'use strict';
 
-    var game = new Phaser.Game(800, 550, Phaser.AUTO, 'valhalla');
+    var game = new Phaser.Game(1280, 720, Phaser.AUTO, 'valhalla');
 
     // Game States
     game.state.add('boot', new Boot());

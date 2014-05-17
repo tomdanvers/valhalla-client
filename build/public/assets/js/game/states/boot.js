@@ -17,6 +17,17 @@ define(
     };
 
     Boot.prototype.preload = function() {
+      //  This sets a limit on the up-scale
+      this.game.scale.maxWidth = 1280;
+      this.game.scale.maxHeight = 720;
+
+      this.game.scale.minWidth = 854;
+      this.game.scale.minHeight = 480;
+
+      //  Then we tell Phaser that we want it to scale up to whatever the browser can handle, but to do it proportionally
+      this.game.scale.scaleMode = Phaser.ScaleManager.SHOW_ALL;
+      this.game.scale.setScreenSize();
+
       this.load.crossOrigin = true;
       this.load.onLoadStart.add(this.onLoadStart, this);
       this.load.onFileError.add(this.onFileLoadError, this);
