@@ -8,7 +8,9 @@ $minified_js = false;
 $environment_id;
 if(strpos($full_url,'valhalla-client') > 0){
     $environment_id = 'local';
-}else if(strpos($full_url,'tomdanvers') > 0){
+}else if($host === 'tomdanvers.com'){
+    $environment_id = 'dev';
+}else {
     $environment_id = 'dev';
 }
 
