@@ -8,7 +8,7 @@ $minified_js = false;
 $environment_id;
 if(strpos($full_url,'valhalla-client') > 0){
     $environment_id = 'local';
-}else if(strpos($full_url,'labs') > 0){
+}else if(strpos($full_url,'tomdanvers') > 0){
     $environment_id = 'dev';
 }
 
@@ -57,7 +57,7 @@ $version_number = '1.3.1';
                 },
                 dev:{
                     server:'http://ec2-52-27-147-89.us-west-2.compute.amazonaws.com',
-                    assetRoot:'/labs/valhalla/assets/'
+                    assetRoot:'/valhalla-client/build/public/assets/'
                 }
             };
             var environmentId = '<?php echo $environment_id ?>';
