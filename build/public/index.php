@@ -58,7 +58,7 @@ $version_number = '1.3.1';
                     assetRoot:'/assets/'
                 },
                 dev:{
-                    server:'http://ec2-52-27-147-89.us-west-2.compute.amazonaws.com',
+                    server:'http://ec2-52-27-147-89.us-west-2.compute.amazonaws.com:8080',
                     assetRoot:'/assets/'
                 }
             };
