@@ -7,7 +7,8 @@ $full_url = $base_url . dirname($_SERVER['REQUEST_URI']);
 $minified_js = false;
 $environment_id;
 if(strpos($full_url,'valhalla-client') > 0){
-    $environment_id = 'local';
+    // $environment_id = 'local';
+    $environment_id = 'dev';
 }else if($host === 'tomdanvers.com'){
     $environment_id = 'dev';
 }else {
@@ -64,6 +65,7 @@ $version_number = '1.3.1';
             };
             var environmentId = '<?php echo $environment_id ?>';
             var environment = environments[environmentId];
+            console.log('Environment:', environmentId, environment);
         </script>
         <div id='valhalla' class="valhalla"></div>
         <?php echo $minified_js ? '<script src="assets/js/main.min.js?v='.$version_number.'" data-main="assets/js/main"></script>' : '<script src="assets/js/lib/require/require.js" data-main="assets/js/main"></script>'; ?>

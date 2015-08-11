@@ -31,7 +31,8 @@ define(
       this.socket.on('connect_failed', this.onConnectFailed.dispatch);
       this.socket.on('error', this.onConnectError.dispatch);
       this.socket.on('connect', function () {
-        that.sessionId = that.socket.socket.sessionid;
+        that.sessionId = that.socket.io.engine.id;
+        console.log(that.sessionId);
         that.onConnect.dispatch();
       });
       this.socket.on('disconnect', this.onDisconnect.dispatch);
