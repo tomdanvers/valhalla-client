@@ -34,10 +34,17 @@ define(
           Phaser.Group.call(this, game, 0, 0);
 
           var body = new Phaser.BitmapData(game, 'body', width, height);
-          body.ctx.fillStyle = isPlayerCharacter ? '#00FF00' : this.colourToHex(model.colour);
+          body.ctx.fillStyle = isPlayerCharacter ? '#EEEEEE' : this.colourToHex(model.colour);
           body.ctx.fillRect(0, 0, width, height);
-          body.ctx.fillStyle = '#555555';
-          body.ctx.fillRect(width - 30, 5, 30, 15);
+          if (isPlayerCharacter) {
+            body.ctx.fillStyle = this.colourToHex(model.colour);
+            body.ctx.fillRect(3, 3, width-6, height-6);
+            body.ctx.fillStyle = '#555555';
+            body.ctx.fillRect(width - 33, 5, 30, 15);
+          } else {
+            body.ctx.fillStyle = '#555555';
+            body.ctx.fillRect(width - 30, 5, 30, 15);
+          }
 
           this.body = new Phaser.Sprite(game, 0, 0, body);
           this.body.anchor.setTo(.5, 1)
@@ -83,7 +90,7 @@ define(
 
     Player.prototype.colourToHex = function(c) {
       var hex = c.toString(16);
-      return hex.length == 1 ? "0" + hex : hex;
+      return '#' + hex;
     };
 
     return Player;
