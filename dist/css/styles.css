@@ -1,0 +1,36 @@
+/**
+ * Import Styles here
+ */
+/* Base Imports */
+html, a, h1, h2, h3, h4, h5 {
+  -webkit-margin-before: 0;
+  -webkit-margin-after: 0;
+  -webkit-margin-start: 0;
+  -webkit-margin-end: 0; }
+
+html {
+  background-color: #202122;
+  color: white;
+  font-family: 'Roboto Condensed', 'Open Sans', sans-serif;
+  text-align: center; }
+
+ul {
+  -webkit-margin-before: 0;
+  -webkit-margin-after: 0;
+  -webkit-margin-start: 0;
+  -webkit-margin-end: 0;
+  -webkit-padding-start: 0; }
+
+img.size-full {
+  height: auto;
+  width: 100%; }
+
+a {
+  color: black; }
+  a:visited, a:active, a:hover {
+    text-decoration: none; }
+
+input, textarea {
+  color: black; }
+
+/* Component Imports */
