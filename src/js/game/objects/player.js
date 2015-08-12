@@ -31,9 +31,12 @@ var Player = function(game, id, model, isPlayerCharacter, width, height) {
   this.healthBar = new Phaser.Sprite(game, -width*.5, -height-5, healthBar);
   this.healthBar.anchor.setTo(0, 1);
 
+  this.scoreText = new Phaser.Text(game, 0, -height - 40, model.score);
+
   this.add(this.health);
   this.add(this.healthBar);
   this.add(this.body);
+  this.add(this.scoreText);
 
   this.id = id;
   this.model = model;
@@ -50,6 +53,17 @@ Player.prototype.create = function() {
 
 Player.prototype.setHealthValue = function(healthValue) {
   this.healthBar.scale.setTo(healthValue, 1);
+};
+
+Player.prototype.setScore = function(score) {
+    if (score !== this.score) {
+
+        this.score = score;
+        this.scoreText.setText(this.score);
+        var bounds = this.scoreText.getBounds();
+        this.scoreText.x = -bounds.width*.5;
+
+    }
 };
 
 Player.prototype.setFacing = function(facing) {

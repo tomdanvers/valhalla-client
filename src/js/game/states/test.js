@@ -173,6 +173,7 @@ Test.prototype.playersUpdate = function(playerModels) {
     }
     player.setFacing(player.model.facing);
     player.setHealthValue(player.model.health/this.settings.player.healthMax);
+    player.setScore(player.model.score);
   };
   this.levelContents.sort('levelY', Phaser.Group.SORT_ASCENDING);
 };
