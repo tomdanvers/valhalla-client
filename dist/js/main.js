@@ -7231,7 +7231,6 @@ Test.prototype.constructor = Test;
 Test.prototype.create = function() {
 
   this.settings = this.game.cache.getJSON('settings');
-  console.log(this.settings);
 
   this.playerCount = 0;
   this.players = [];
@@ -7347,7 +7346,7 @@ Test.prototype.playerCheck = function(playerModel) {
 Test.prototype.playerAdd = function(id, playerModel) {
   var isPlayerCharacter = ConnectionManager.sessionId == id;
   var player = new Player(this.game, id, playerModel, isPlayerCharacter, this.settings.player.width, this.settings.player.height);
-  // console.log('ADD:', id, playerModel);
+  console.log('ADD:', id, playerModel);
   this.players.push(player);
   this.playersMap[id] = player;
   this.levelContents.add(player);
@@ -7398,4 +7397,5 @@ Test.prototype.playersUpdate = function(playerModels) {
 };
 
 module.exports = Test;
+
 },{"../managers/connection-manager":53,"../objects/player":54}]},{},[51])
