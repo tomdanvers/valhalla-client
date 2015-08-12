@@ -35,9 +35,11 @@
          <script>
             
             var environmentId;
+            console.log(window.location.host)
             switch (window.location.host) {
                 case 'localhost':
-                    environmentId = 'dev';
+                case 'localhost:8889':
+                    environmentId = 'local';
                     break;
                 case 'tomdanvers.com':
                     environmentId = 'dev';
@@ -49,7 +51,7 @@
 
             var environments = {
                 local:{
-                    server:'http://valhalla-server:8080',
+                    server:'http://localhost:8080',
                     assetRoot:'/assets/'
                 },
                 dev:{

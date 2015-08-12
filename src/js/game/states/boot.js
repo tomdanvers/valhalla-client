@@ -27,7 +27,7 @@ Boot.prototype.preload = function() {
   this.load.onFileError.add(this.onFileLoadError, this);
   this.load.onLoadComplete.add(this.onLoadComplete, this);
 
-  this.load.json('settings', environment.server+'/settings.json');
+  this.load.json('settings', environment.server+'/config.json');
   this.load.image('tex_wall', '/img/texture_wall.jpg');
   this.load.image('tiles', '/img/tiles.png');
 
