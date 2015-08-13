@@ -26,10 +26,31 @@ ConnectionManager.prototype.connect = function() {
   this.socket.on('error', this.onConnectError.dispatch);
   this.socket.on('connect', function () {
     that.sessionId = that.socket.io.engine.id;
-    that.onConnect.dispatch();
+    var r = Math.random();
+    var type;
+    if (r < .333) {
+        type = 'both';
+    } else if (r < .666) {
+        type = 'screen';
+    } else {
+        type = 'input';
+    }
+    that.socket.emit('handshake', {
+        type: type
+    });
+    // that.onConnect.dispatch();
+    that.socket.on('connected', function () {
+        that.onConnect.dispatch();
+    });
   });
   this.socket.on('disconnect', this.onDisconnect.dispatch);
   this.socket.on('reconnect', this.onReconnect.dispatch);
+  this.socket.on('mode:state:current', function (data) {
+    console.log('mode:state:current', data);
+  });
+  this.socket.on('mode:state:change', function (data) {
+    console.log('mode:state:change', data);
+  });
   this.socket.on('update', function (data) {
     that.onUpdate.dispatch(data);
   });
