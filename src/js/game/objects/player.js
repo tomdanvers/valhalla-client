@@ -7,12 +7,13 @@ var Player = function(game, id, model, isPlayerCharacter, width, height) {
   if (isPlayerCharacter) {
     body.ctx.fillStyle = this.colourToHex(model.colour);
     body.ctx.fillRect(3, 3, width-6, height-6);
-    body.ctx.fillStyle = '#555555';
-    body.ctx.fillRect(width - 33, 5, 30, 15);
-  } else {
-    body.ctx.fillStyle = '#555555';
-    body.ctx.fillRect(width - 30, 5, 30, 15);
   }
+  if (model.isNPC) {
+    body.ctx.fillStyle = '#555555';
+  }else {
+    body.ctx.fillStyle = '#880000';
+  }
+    body.ctx.fillRect(width - 30, 5, 30, 15);
 
   this.body = new Phaser.Sprite(game, 0, 0, body);
   this.body.anchor.setTo(.5, 1)
