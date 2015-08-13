@@ -6999,17 +6999,19 @@ function toArray(list, index) {
 var Main = require('./game/main');
 },{"./game/main":52}],52:[function(require,module,exports){
 var Boot = require('./states/boot');
+var CreateCharacter = require('./states/create-character');
 var Connect = require('./states/connect');
 var Test = require('./states/test');
 
 var game = new Phaser.Game(1280, 720, Phaser.AUTO, 'valhalla');
 
 game.state.add('boot', new Boot());
+game.state.add('create-character', new CreateCharacter());
 game.state.add('connect', new Connect());
 game.state.add('test', new Test());
 
 game.state.start('boot');
-},{"./states/boot":55,"./states/connect":56,"./states/test":57}],53:[function(require,module,exports){
+},{"./states/boot":55,"./states/connect":56,"./states/create-character":57,"./states/test":58}],53:[function(require,module,exports){
 var socket = require('socket.io-client');
 
 var ConnectionManager = function(game) {
@@ -7232,6 +7234,47 @@ Connect.prototype.onConnectError = function(){
 
 module.exports = Connect;
 },{"../managers/connection-manager":53}],57:[function(require,module,exports){
+'use strict';
+
+var CreateCharacter = function(game) {
+    Phaser.State.call(this, game);
+}
+
+CreateCharacter.prototype = Object.create(Phaser.State.prototype);
+CreateCharacter.prototype.constructor = CreateCharacter;
+
+CreateCharacter.prototype.init = function() {
+  console.log('CreateCharacter.init()');
+};
+
+CreateCharacter.prototype.preload = function() {
+  console.log('CreateCharacter.preload()');
+  
+
+
+};
+
+CreateCharacter.prototype.create = function() {
+  console.log('CreateCharacter.create()');
+  
+  //this.game.state.start('connect');
+  console.log(Phaser)
+  var text = new Phaser.Text(this.game, 0, 0, 'Hello');
+
+  console.log(this.game.input.keyboard)
+  var keyboard = this.game.input.keyboard;
+
+  this.game.input.keyboard.onUpCallback = function(event) {
+    console.log(keyboard.justPressed);
+    
+  }
+};
+
+CreateCharacter.prototype.update = function() {
+};
+
+module.exports = CreateCharacter;
+},{}],58:[function(require,module,exports){
 
 var ConnectionManager = require('../managers/connection-manager');
 var Player = require('../objects/player');
