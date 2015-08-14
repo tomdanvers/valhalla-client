@@ -54,7 +54,8 @@ Test.prototype.create = function() {
 
     // Disconnect panel...
     this.overlayPanel = new GameOverlay(this.game, 0, 0, renderWidth, renderHeight);
-    // this.overlayPanel.visible = false;
+    this.overlayPanel.fixedToCamera = true;
+    this.overlayPanel.alpha = 0;
     this.game.add.existing(this.overlayPanel);
 
 
@@ -79,11 +80,11 @@ Test.prototype.create = function() {
 };
 
 Test.prototype.onDisconnect = function(){
-    this.overlayPanel.visible = true;
+    this.overlayPanel.show();
 };
 
 Test.prototype.onReconnect = function(){
-    this.overlayPanel.visible = false;
+    this.overlayPanel.hide();
 };
 
 Test.prototype.onStateChange = function(data){
@@ -92,18 +93,21 @@ Test.prototype.onStateChange = function(data){
         case 'intro':
         if (data.mode) {
             this.overlayPanel.setMessage((data.mode).toUpperCase());
+        } else {
+            this.overlayPanel.setMessage(('Game Starting...').toUpperCase());
         }
-        this.overlayPanel.visible = true;
+        this.overlayPanel.show();
         break;
         case 'match':
-        this.overlayPanel.visible = false;
+        this.overlayPanel.hide();
         break;
         case 'results':
         if (data.winner) {
             this.overlayPanel.setMessage(('Game Over\r' + data.winner + ' Won').toUpperCase());
-            // this.overlayPanel.setMessage(('Game Over\r' + data.winner + ' Won\rWith score of' + data.score).toUpperCase());
+        } else {
+            this.overlayPanel.setMessage(('Game Over').toUpperCase());
         }
-        this.overlayPanel.visible = true;
+        this.overlayPanel.show();
         break;
     }
 
