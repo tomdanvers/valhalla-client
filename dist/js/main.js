@@ -7784,9 +7784,9 @@ TypeSelect.prototype.create = function() {
 
 
   // Debug
-  this.game.state.start('connect', true, false, {
-    type: 'screen'
-  });
+  // this.game.state.start('connect', true, false, {
+  //   type: 'screen'
+  // });
 
 };
 
