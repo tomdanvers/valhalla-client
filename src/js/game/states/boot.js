@@ -47,7 +47,7 @@ Boot.prototype.onLoadComplete = function() {
 
 Boot.prototype.create = function() {
   this.game.input.maxPointers = 1;
-  this.game.state.start('connect');
+  this.game.state.start('type-select');
 };
 
 module.exports = Boot;

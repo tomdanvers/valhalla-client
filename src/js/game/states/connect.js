@@ -7,22 +7,36 @@ var Connect = function(game) {
 Connect.prototype = Object.create(Phaser.State.prototype);
 Connect.prototype.constructor = Connect;
 
+Connect.prototype.init = function(options) {
+  this.type = options.type;
+};
+
 Connect.prototype.create = function() {
-  ConnectionManager.connect();
+  ConnectionManager.connect(this.type);
   ConnectionManager.onConnect.add(this.onConnect, this);
-  ConnectionManager.onConnecting.add(this.onConnecting, this);
-  ConnectionManager.onConnectFailed.add(this.onConnectFailed, this);
-  ConnectionManager.onConnectError.add(this.onConnectError, this);
 };
 
 Connect.prototype.onConnecting = function(){
   console.log('Connect.onConnecting()');
 };
 
-Connect.prototype.onConnect = function(){
-  console.log('Connect.onConnect()');
+Connect.prototype.onConnect = function(data) {
 
-  this.game.state.start('test');
+  if (this.type === 'input') {
+
+    this.game.state.start('input', true, false, {
+        state: data.state
+    });
+
+  } else {
+
+    this.game.state.start('test', true, false, {
+        state: data.state,
+        isScreen: this.type === 'screen'
+    });
+
+  }
+
 };
 
 Connect.prototype.onConnectFailed = function(){

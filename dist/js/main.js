@@ -6999,25 +6999,25 @@ function toArray(list, index) {
 var Main = require('./game/main');
 },{"./game/main":52}],52:[function(require,module,exports){
 var Boot = require('./states/boot');
-var CreateCharacter = require('./states/create-character');
+var TypeSelect = require('./states/type-select');
 var Connect = require('./states/connect');
 var Test = require('./states/test');
+var Input = require('./states/input');
 
 var game = new Phaser.Game(1280, 720, Phaser.AUTO, 'valhalla');
 
 game.state.add('boot', new Boot());
-game.state.add('create-character', new CreateCharacter());
+game.state.add('type-select', new TypeSelect());
 game.state.add('connect', new Connect());
 game.state.add('test', new Test());
+game.state.add('input', new Input());
 
 game.state.start('boot');
-},{"./states/boot":55,"./states/connect":56,"./states/create-character":57,"./states/test":58}],53:[function(require,module,exports){
+
+},{"./states/boot":55,"./states/connect":56,"./states/input":57,"./states/test":58,"./states/type-select":59}],53:[function(require,module,exports){
 var socket = require('socket.io-client');
 
 var ConnectionManager = function(game) {
-    console.log('ConnectionManager');
-    console.log(socket);
-
     this.onConnecting = new Phaser.Signal();
     this.onConnect = new Phaser.Signal();
     this.onDisconnect = new Phaser.Signal();
@@ -7027,58 +7027,64 @@ var ConnectionManager = function(game) {
     this.onReconnect = new Phaser.Signal();
     this.onReconnecting = new Phaser.Signal();
     this.onUpdate = new Phaser.Signal();
+    this.onStateChange = new Phaser.Signal();
 }
 
 ConnectionManager.prototype = Object.create({});
 ConnectionManager.prototype.constructor = ConnectionManager;
 
-ConnectionManager.prototype.connect = function() {
-  var that = this;
-  this.socket = socket(environment.server);
-  this.socket.on('connecting', this.onConnecting.dispatch);
-  this.socket.on('connect_failed', this.onConnectFailed.dispatch);
-  this.socket.on('error', this.onConnectError.dispatch);
-  this.socket.on('connect', function () {
-    that.sessionId = that.socket.io.engine.id;
-    var r = Math.random();
-    var type;
-    if (r < .333) {
-        type = 'both';
-    } else if (r < .666) {
-        type = 'screen';
-    } else {
-        type = 'input';
-    }
-    that.socket.emit('handshake', {
-        type: type
+ConnectionManager.prototype.connect = function(type) {
+    var that = this;
+    this.socket = socket(environment.server);
+    
+    this.socket.on('connecting', this.onConnecting.dispatch);
+    
+    this.socket.on('connect_failed', this.onConnectFailed.dispatch);
+    
+    this.socket.on('error', this.onConnectError.dispatch);
+
+    this.socket.on('connect', function () {
+        
+        that.sessionId = that.socket.io.engine.id;
+        
+        that.socket.emit('handshake', {
+            type: type
+        });
+        
+        that.socket.on('connected', function (data) {
+            that.onConnect.dispatch(data);
+        });
+
     });
-    // that.onConnect.dispatch();
-    that.socket.on('connected', function () {
-        that.onConnect.dispatch();
+
+    this.socket.on('disconnect', this.onDisconnect.dispatch);
+    
+    this.socket.on('reconnect', this.onReconnect.dispatch);
+    
+    this.socket.on('mode:state:current', function (data) {
+        console.log('CURRENT STATE', data);
+        that.onStateChange.dispatch(data);
     });
-  });
-  this.socket.on('disconnect', this.onDisconnect.dispatch);
-  this.socket.on('reconnect', this.onReconnect.dispatch);
-  this.socket.on('mode:state:current', function (data) {
-    console.log('mode:state:current', data);
-  });
-  this.socket.on('mode:state:change', function (data) {
-    console.log('mode:state:change', data);
-  });
-  this.socket.on('update', function (data) {
-    that.onUpdate.dispatch(data);
-  });
+    
+    this.socket.on('mode:state:change', function (data) {
+        that.onStateChange.dispatch(data);
+    });
+    
+    this.socket.on('update', function (data) {
+        that.onUpdate.dispatch(data);
+    });
+
 };
 
 ConnectionManager.prototype.emit = function(name, data) {
-  this.socket.emit(name, data);
+    this.socket.emit(name, data);
 };
 
 ConnectionManager.prototype.onUpdate = function() {
-  if(data.time < this.serverTime) return;
-  this.serverTime = data.time;
-  that.playersCheck(data.data.players);
-  that.playersUpdate(data.data.players);
+    if(data.time < this.serverTime) return;
+    this.serverTime = data.time;
+    that.playersCheck(data.data.players);
+    that.playersUpdate(data.data.players);
 };
 
 module.exports = new ConnectionManager();
@@ -7213,7 +7219,7 @@ Boot.prototype.onLoadComplete = function() {
 
 Boot.prototype.create = function() {
   this.game.input.maxPointers = 1;
-  this.game.state.start('connect');
+  this.game.state.start('type-select');
 };
 
 module.exports = Boot;
@@ -7227,22 +7233,36 @@ var Connect = function(game) {
 Connect.prototype = Object.create(Phaser.State.prototype);
 Connect.prototype.constructor = Connect;
 
+Connect.prototype.init = function(options) {
+  this.type = options.type;
+};
+
 Connect.prototype.create = function() {
-  ConnectionManager.connect();
+  ConnectionManager.connect(this.type);
   ConnectionManager.onConnect.add(this.onConnect, this);
-  ConnectionManager.onConnecting.add(this.onConnecting, this);
-  ConnectionManager.onConnectFailed.add(this.onConnectFailed, this);
-  ConnectionManager.onConnectError.add(this.onConnectError, this);
 };
 
 Connect.prototype.onConnecting = function(){
   console.log('Connect.onConnecting()');
 };
 
-Connect.prototype.onConnect = function(){
-  console.log('Connect.onConnect()');
+Connect.prototype.onConnect = function(data) {
 
-  this.game.state.start('test');
+  if (this.type === 'input') {
+
+    this.game.state.start('input', true, false, {
+        state: data.state
+    });
+
+  } else {
+
+    this.game.state.start('test', true, false, {
+        state: data.state,
+        isScreen: this.type === 'screen'
+    });
+
+  }
+
 };
 
 Connect.prototype.onConnectFailed = function(){
@@ -7256,48 +7276,124 @@ Connect.prototype.onConnectError = function(){
 };
 
 module.exports = Connect;
-},{"../managers/connection-manager":53}],57:[function(require,module,exports){
-'use strict';
 
-var CreateCharacter = function(game) {
+},{"../managers/connection-manager":53}],57:[function(require,module,exports){
+
+var ConnectionManager = require('../managers/connection-manager');
+var Player = require('../objects/player');
+
+var Input = function(game) {
     Phaser.State.call(this, game);
 }
 
-CreateCharacter.prototype = Object.create(Phaser.State.prototype);
-CreateCharacter.prototype.constructor = CreateCharacter;
+Input.prototype = Object.create(Phaser.State.prototype);
+Input.prototype.constructor = Input;
 
-CreateCharacter.prototype.init = function() {
-  console.log('CreateCharacter.init()');
+Input.prototype.init = function(options) {
+    console.log('Input.init(',options,')');
+    this.initialState = options.state;
+}
+Input.prototype.create = function() {
+
+    this.settings = this.game.cache.getJSON('settings');
+
+    this.playerCount = 0;
+    this.players = [];
+    this.playersMap = {};
+
+    this.input = {};// Used to prevent uneccessary commands from being sent
+
+    this.commands = [];
+
+    this.game.input.keyboard.addCallbacks(this, this.inputKeyDown, this.inputKeyUp);
+
+    var buttonWidth = 80;
+    var buttonHeight = 80;
+
+    var buttonBMD = new Phaser.BitmapData(this.game, 'button', buttonWidth, buttonHeight);
+    buttonBMD.ctx.fillStyle = 'red';
+    buttonBMD.ctx.fillRect(0, 0, buttonWidth, buttonHeight);
+
+    var viewportWidth = this.game.width;
+    var viewportHeight = this.game.height;
+
+    var buttonUp = this.game.add.button((viewportWidth-buttonWidth)*.5, 100, buttonBMD);
+    var buttonDown = this.game.add.button((viewportWidth-buttonWidth)*.5, 200, buttonBMD);
+    var buttonLeft = this.game.add.button((viewportWidth-buttonWidth)*.5 - 100, 200, buttonBMD);
+    var buttonRight = this.game.add.button((viewportWidth-buttonWidth)*.5 + 100, 200, buttonBMD);
+
+    var that = this;
+    ConnectionManager.onUpdate.add(function(data){
+
+        if(data.time < this.serverTime) return;
+
+        this.serverTime = data.time;
+
+    }, this);
+
+    ConnectionManager.onDisconnect.add(this.onDisconnect, this);
+    ConnectionManager.onReconnect.add(this.onReconnect, this);
+    ConnectionManager.onStateChange.add(this.onStateChange, this);
+
+    this.onStateChange({
+        state: this.initialState
+    });
 };
 
-CreateCharacter.prototype.preload = function() {
-  console.log('CreateCharacter.preload()');
-  
+Input.prototype.onDisconnect = function(){
+    // this.overlayPanel.visible = true;
+};
 
+Input.prototype.onReconnect = function(){
+    // this.overlayPanel.visible = false;
+};
+
+Input.prototype.onStateChange = function(data){
+
+    switch(data.state) {
+        case 'intro':
+        // this.overlayPanel.visible = true;
+        break;
+        case 'match':
+        // this.overlayPanel.visible = false;
+        break;
+        case 'results':
+        // this.overlayPanel.visible = true;
+        break;
+    }
 
 };
 
-CreateCharacter.prototype.create = function() {
-  console.log('CreateCharacter.create()');
-  
-  //this.game.state.start('connect');
-  console.log(Phaser)
-  var text = new Phaser.Text(this.game, 0, 0, 'Hello');
-
-  console.log(this.game.input.keyboard)
-  var keyboard = this.game.input.keyboard;
-
-  this.game.input.keyboard.onUpCallback = function(event) {
-    console.log(keyboard.justPressed);
-    
-  }
+Input.prototype.update = function() {
+    if(this.commands.length > 0){
+        this.sendCommands(this.commands);
+        this.commands.length = 0;
+    }
 };
 
-CreateCharacter.prototype.update = function() {
+Input.prototype.inputKeyDown = function(event) {
+    if(!this.input[event.keyCode]){
+        this.input[event.keyCode] = true;
+        this.commands.push('d-'+event.keyCode);
+    }
 };
 
-module.exports = CreateCharacter;
-},{}],58:[function(require,module,exports){
+Input.prototype.inputKeyUp = function(event) {
+    if(this.input[event.keyCode]){
+        this.input[event.keyCode] = false;
+        this.commands.push('u-'+event.keyCode);
+    }
+};
+
+Input.prototype.sendCommands = function(commands) {
+    ConnectionManager.emit('commands', {time:this.serverTime, data:commands});
+};
+
+// ------------------------------------------------------------------------------------------------------------ PLAYERS CHECK
+
+module.exports = Input;
+
+},{"../managers/connection-manager":53,"../objects/player":54}],58:[function(require,module,exports){
 
 var ConnectionManager = require('../managers/connection-manager');
 var Player = require('../objects/player');
@@ -7309,175 +7405,272 @@ var Test = function(game) {
 Test.prototype = Object.create(Phaser.State.prototype);
 Test.prototype.constructor = Test;
 
+Test.prototype.init = function(options) {
+    console.log('Test.init(',options,')');
+    this.initialState = options.state;
+    this.isScreen = options.isScreen;
+}
 Test.prototype.create = function() {
 
-  this.settings = this.game.cache.getJSON('settings');
+    this.settings = this.game.cache.getJSON('settings');
 
-  this.playerCount = 0;
-  this.players = [];
-  this.playersMap = {};
+    this.playerCount = 0;
+    this.players = [];
+    this.playersMap = {};
 
-  this.input = {};// Used to prevent uneccessary commands from being sent
+    this.input = {};// Used to prevent uneccessary commands from being sent
 
-  this.game.world.setBounds(0, 0, this.settings.map.width*32, this.settings.map.height*32);
+    var levelWidth = this.settings.map.width*32;
+    var levelHeight = this.settings.map.height*32;
 
-  this.game.add.tileSprite(0, -64, this.settings.map.width*32, this.settings.map.height*32, 'tex_wall');
+    var renderWidth = this.isScreen ? levelWidth : this.game.width;
+    var renderHeight = this.isScreen ? levelHeight : this.game.height;
 
-  this.game.cache.addTilemap('map',null,this.settings.map);
-  this.tilemap = this.game.add.tilemap('map');
-  this.tilemap.addTilesetImage('tiles', 'tiles');
+    this.game.world.scale.setTo(this.game.width/renderWidth, this.game.height/renderHeight);
+    
+    this.game.world.setBounds(0, 0, levelWidth, levelHeight);
+    this.game.add.tileSprite(0, -64, levelWidth, levelHeight, 'tex_wall');
+    
 
-  this.levelContents = new Phaser.Group(this.game);
+    this.game.cache.addTilemap('map',null,this.settings.map);
+    this.tilemap = this.game.add.tilemap('map',32, 32, renderWidth, renderHeight);
+    this.tilemap.addTilesetImage('tiles', 'tiles');
 
-  this.decoration = this.tilemap.createLayer('decoration');
-  this.levelContents.add(this.decoration);
+    this.levelContents = new Phaser.Group(this.game);
 
-  this.ground = this.tilemap.createLayer('floor');
-  this.levelContents.add(this.ground);
+    this.decoration = this.tilemap.createLayer('decoration', renderWidth, renderHeight);
+    this.levelContents.add(this.decoration);
 
-  this.commands = [];
-  this.game.input.keyboard.addCallbacks(this, this.inputKeyDown, this.inputKeyUp);
+    this.ground = this.tilemap.createLayer('floor', renderWidth, renderHeight);
+    this.levelContents.add(this.ground);
 
-  // Disconnect panel...
-  this.disconnectPanel = new Phaser.Graphics(this.game, 0, 0);
-  //this.disconnectPanel.lineStyle(2, 0x0000FF, 1); // width, color (0x0000FF), alpha (0 -> 1) // required settings
-  this.disconnectPanel.beginFill(0x000000, .75);
-  this.disconnectPanel.drawRect(0,0,this.game.width,this.game.height);
-  this.disconnectPanel.fixedToCamera = true;
-  this.disconnectPanel.visible = false;
-  this.game.add.existing(this.disconnectPanel)
-  var that = this;
-  ConnectionManager.onUpdate.add(function(data){
-    if(data.time < this.serverTime) return;
-    this.serverTime = data.time;
-    that.playersCheck(data.data.players);
-    that.playersUpdate(data.data.players);
-  }, this);
+    this.commands = [];
+    this.game.input.keyboard.addCallbacks(this, this.inputKeyDown, this.inputKeyUp);
 
-  ConnectionManager.onDisconnect.add(this.onDisconnect, this);
-  ConnectionManager.onReconnect.add(this.onReconnect, this);
+    // Disconnect panel...
+    this.overlayPanel = new Phaser.Graphics(this.game, 0, 0);
+    this.overlayPanel.beginFill(0x000000, .75);
+    this.overlayPanel.drawRect(0,0,renderWidth, renderHeight);
+    this.overlayPanel.fixedToCamera = true;
+    this.overlayPanel.visible = false;
+    this.game.add.existing(this.overlayPanel)
+
+
+    var that = this;
+    ConnectionManager.onUpdate.add(function(data){
+        
+        if(data.time < this.serverTime) return;
+        
+        this.serverTime = data.time;
+        that.playersCheck(data.data.players);
+        that.playersUpdate(data.data.players);
+
+    }, this);
+
+    ConnectionManager.onDisconnect.add(this.onDisconnect, this);
+    ConnectionManager.onReconnect.add(this.onReconnect, this);
+    ConnectionManager.onStateChange.add(this.onStateChange, this);
+
+    this.onStateChange({
+        state: this.initialState
+    });
 };
 
 Test.prototype.onDisconnect = function(){
-  this.disconnectPanel.visible = true;
+    this.overlayPanel.visible = true;
 };
 
 Test.prototype.onReconnect = function(){
-  this.disconnectPanel.visible = false;
+    this.overlayPanel.visible = false;
+};
+
+Test.prototype.onStateChange = function(data){
+
+    switch(data.state) {
+        case 'intro':
+        this.overlayPanel.visible = true;
+        break;
+        case 'match':
+        this.overlayPanel.visible = false;
+        break;
+        case 'results':
+        this.overlayPanel.visible = true;
+        break;
+    }
+
 };
 
 Test.prototype.update = function() {
-  if(this.commands.length > 0){
-    this.sendCommands(this.commands);
-    this.commands.length = 0;
-  }
+    if(this.commands.length > 0){
+        this.sendCommands(this.commands);
+        this.commands.length = 0;
+    }
 };
 
 Test.prototype.inputKeyDown = function(event) {
-  if(!this.input[event.keyCode]){
-    this.input[event.keyCode] = true;
-    this.commands.push('d-'+event.keyCode);
-  }
+    if(!this.input[event.keyCode]){
+        this.input[event.keyCode] = true;
+        this.commands.push('d-'+event.keyCode);
+    }
 };
 
 Test.prototype.inputKeyUp = function(event) {
-  if(this.input[event.keyCode]){
-    this.input[event.keyCode] = false;
-    this.commands.push('u-'+event.keyCode);
-  }
+    if(this.input[event.keyCode]){
+        this.input[event.keyCode] = false;
+        this.commands.push('u-'+event.keyCode);
+    }
 };
 
 Test.prototype.sendCommands = function(commands) {
-  ConnectionManager.emit('commands', {time:this.serverTime, data:commands});
+    ConnectionManager.emit('commands', {time:this.serverTime, data:commands});
 };
 
 // ------------------------------------------------------------------------------------------------------------ PLAYERS CHECK
 
 Test.prototype.playersCheck = function(playerModels) {
-  var count, i, id, checked = {};
+    var count, i, id, checked = {};
 
-  count = this.playerCount
-  for (i = count - 1; i >= 0; i--){
-    checked[this.players[i].id] = 'old';
-  }
-
-  count = playerModels.length;
-  for (i = count - 1; i >= 0; i--) {
-    var state = this.playerCheck(playerModels[i]);
-    checked[playerModels[i].id] = state;
-    if(state == 'new') this.playerAdd(playerModels[i].id, playerModels[i]);
-  };
-
-  for (id in checked) {
-    if(checked[id] == 'old'){
-      this.playerRemove(id);
+    count = this.playerCount
+    for (i = count - 1; i >= 0; i--){
+        checked[this.players[i].id] = 'old';
     }
-  };
+
+    count = playerModels.length;
+    for (i = count - 1; i >= 0; i--) {
+        var state = this.playerCheck(playerModels[i]);
+        checked[playerModels[i].id] = state;
+        if(state == 'new') this.playerAdd(playerModels[i].id, playerModels[i]);
+    }
+
+    for (id in checked) {
+        if(checked[id] == 'old'){
+            this.playerRemove(id);
+        }
+    }
 };
 
 Test.prototype.playerCheck = function(playerModel) {
-  for (var i = this.playerCount - 1; i >= 0; i--) {
-    if(this.players[i].id == playerModel.id){
-      return 'existing';
-    }
-  };
-  return 'new';
+    for (var i = this.playerCount - 1; i >= 0; i--) {
+        if(this.players[i].id == playerModel.id){
+            return 'existing';
+        }
+    };
+    return 'new';
 };
 
 Test.prototype.playerAdd = function(id, playerModel) {
-  var isPlayerCharacter = ConnectionManager.sessionId == id;
-  var player = new Player(this.game, id, playerModel, isPlayerCharacter, this.settings.player.width, this.settings.player.height);
-  console.log('ADD:', id, playerModel);
-  this.players.push(player);
-  this.playersMap[id] = player;
-  this.levelContents.add(player);
-  this.playerCount ++;
+    var isPlayerCharacter = ConnectionManager.sessionId == id;
+    var player = new Player(this.game, id, playerModel, isPlayerCharacter, this.settings.player.width, this.settings.player.height);
+    //console.log('ADD:', id, playerModel);
+    this.players.push(player);
+    this.playersMap[id] = player;
+    this.levelContents.add(player);
+    this.playerCount ++;
 
-  if(isPlayerCharacter){
-    this.game.camera.follow(player);
-    this.playerCharacter = player;
-  }else if(this.playerCharacter !== undefined){
-    //this.levelContents.bringToTop(this.playerCharacter);
-  }
+    if(isPlayerCharacter && !this.isScreen){
+        this.game.camera.follow(player);
+        this.playerCharacter = player;
+    }else if(this.playerCharacter !== undefined){
+        //this.levelContents.bringToTop(this.playerCharacter);
+    }
 };
 
 Test.prototype.playerRemove = function(id) {
-  console.log('REMOVE:',id);
-  var player = this.playersMap[id];
-  for (var i = this.playerCount - 1; i >= 0; i--) {
+// console.log('REMOVE:',id);
+var player = this.playersMap[id];
+for (var i = this.playerCount - 1; i >= 0; i--) {
     if(this.players[i].id == id){
-      this.players.splice(i, 1);
-      break;
+        this.players.splice(i, 1);
+        break;
     }
-  };
-  delete this.playersMap[id];
-  player.destroy();
-  this.playerCount --;
+};
+delete this.playersMap[id];
+player.destroy();
+this.playerCount --;
 };
 
 // ----------------------------------------------------------------------------------------------------------- PLAYERS UPDATE
 
 Test.prototype.playersUpdate = function(playerModels) {
-  var count = playerModels.length;
-  var model, player;
-  for (var i = count - 1; i >= 0; i--) {
-    model = playerModels[i];
-    player = this.playersMap[model.id];
-    player.model = model;
-    player.x = player.model.x;
-    player.y = player.model.y;
-    player.levelY = player.model.levelY;
-    if(player === this.playerCharacter){
-      player.previousX = player.x;
-      player.previousY = player.y;
-    }
-    player.setFacing(player.model.facing);
-    player.setHealthValue(player.model.health/this.settings.player.healthMax);
-    player.setScore(player.model.score);
-  };
-  this.levelContents.sort('levelY', Phaser.Group.SORT_ASCENDING);
+    var count = playerModels.length;
+    var model, player;
+    for (var i = count - 1; i >= 0; i--) {
+        model = playerModels[i];
+        player = this.playersMap[model.id];
+        player.model = model;
+        player.x = player.model.x;
+        player.y = player.model.y;
+        player.levelY = player.model.levelY;
+        if(player === this.playerCharacter){
+            player.previousX = player.x;
+            player.previousY = player.y;
+        }
+        player.setFacing(player.model.facing);
+        player.setHealthValue(player.model.health/this.settings.player.healthMax);
+        player.setScore(player.model.score);
+    };
+    this.levelContents.sort('levelY', Phaser.Group.SORT_ASCENDING);
 };
 
 module.exports = Test;
 
-},{"../managers/connection-manager":53,"../objects/player":54}]},{},[51])
+},{"../managers/connection-manager":53,"../objects/player":54}],59:[function(require,module,exports){
+'use strict';
+
+var TypeSelect = function(game) {
+    Phaser.State.call(this, game);
+}
+
+TypeSelect.prototype = Object.create(Phaser.State.prototype);
+TypeSelect.prototype.constructor = TypeSelect;
+
+TypeSelect.prototype.init = function() {
+  console.log('TypeSelect.init()');
+};
+
+TypeSelect.prototype.preload = function() {
+  console.log('TypeSelect.preload()');
+};
+
+TypeSelect.prototype.create = function() {
+  console.log('TypeSelect.create()');
+
+  var buttonWidth = 200;
+  var buttonHeight = 60;
+
+  var buttonBMD = new Phaser.BitmapData(this.game, 'button', buttonWidth, buttonHeight);
+  buttonBMD.ctx.fillStyle='red';
+  buttonBMD.ctx.fillRect(0, 0, buttonWidth, buttonHeight);
+
+  var viewportWidth = this.game.width;
+  var viewportHeight = this.game.height;
+
+  var buttonBoth = this.game.add.button((viewportWidth-buttonWidth)*.5, 100, buttonBMD, this.bothClickHandler, this);
+  var buttonScreen = this.game.add.button((viewportWidth-buttonWidth)*.5, 200, buttonBMD, this.screenClickHandler, this);
+  var buttonInput = this.game.add.button((viewportWidth-buttonWidth)*.5, 280, buttonBMD, this.inputClickHandler, this);
+  
+};
+
+TypeSelect.prototype.bothClickHandler = function() {
+  this.game.state.start('connect', true, false, {
+    type: 'both'
+  });
+};
+
+TypeSelect.prototype.screenClickHandler = function() {
+  this.game.state.start('connect', true, false, {
+    type: 'screen'
+  });
+};
+
+TypeSelect.prototype.inputClickHandler = function() {
+  this.game.state.start('connect', true, false, {
+    type: 'input'
+  });
+};
+
+TypeSelect.prototype.update = function() {
+};
+
+module.exports = TypeSelect;
+},{}]},{},[51])
