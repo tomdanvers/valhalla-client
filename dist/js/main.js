@@ -7014,7 +7014,7 @@ game.state.add('input', new Input());
 
 game.state.start('boot');
 
-},{"./states/boot":56,"./states/connect":57,"./states/input":58,"./states/test":59,"./states/type-select":60}],53:[function(require,module,exports){
+},{"./states/boot":57,"./states/connect":58,"./states/input":59,"./states/test":60,"./states/type-select":61}],53:[function(require,module,exports){
 var socket = require('socket.io-client');
 
 var ConnectionManager = function(game) {
@@ -7174,6 +7174,40 @@ CharacterText.prototype.render = function() {
 module.exports = CharacterText;
 
 },{}],55:[function(require,module,exports){
+var GameOverlay = function(game, x, y, width, height) {
+
+    Phaser.Group.call(this, game, x, y);
+
+    this.renderWidth = width;
+    this.renderHeight = height;
+
+    this.bg = new Phaser.Graphics(this.game, 0, 0);
+    this.bg.beginFill(0x000000, .75);
+    this.bg.drawRect(0, 0, this.renderWidth, this.renderHeight);
+    this.bg.fixedToCamera = true;
+    this.addChild(this.bg);
+
+    var style = { font: "64px Arial", fill: "#FFFFFF", wordWrap: true, wordWrapWidth: this.renderWidth, align: "center" };
+
+    this.text = new Phaser.Text(game, 0, 0, '', style);
+    this.addChild(this.text);
+
+};
+
+GameOverlay.prototype = Object.create(Phaser.Group.prototype);
+GameOverlay.prototype.constructor = GameOverlay;
+
+GameOverlay.prototype.setMessage = function(message) {
+
+    this.text.setText(message);
+    this.text.x = (this.renderWidth - this.text.width) * .5;
+    this.text.y = (this.renderHeight - this.text.height) * .5;
+
+};
+
+module.exports = GameOverlay;
+
+},{}],56:[function(require,module,exports){
 var CharacterText = require('./character-text');
 
 var Player = function(game, id, model, isPlayerCharacter, width, height) {
@@ -7263,7 +7297,7 @@ Player.prototype.colourToHex = function(c) {
 };
 module.exports = Player;
 
-},{"./character-text":54}],56:[function(require,module,exports){
+},{"./character-text":54}],57:[function(require,module,exports){
 'use strict';
 
 var Boot = function(game) {
@@ -7317,7 +7351,7 @@ Boot.prototype.create = function() {
 };
 
 module.exports = Boot;
-},{}],57:[function(require,module,exports){
+},{}],58:[function(require,module,exports){
 var ConnectionManager = require('../managers/connection-manager');
 
 var Connect = function(game) {
@@ -7371,7 +7405,7 @@ Connect.prototype.onConnectError = function(){
 
 module.exports = Connect;
 
-},{"../managers/connection-manager":53}],58:[function(require,module,exports){
+},{"../managers/connection-manager":53}],59:[function(require,module,exports){
 
 var ConnectionManager = require('../managers/connection-manager');
 var Player = require('../objects/player');
@@ -7487,10 +7521,11 @@ Input.prototype.sendCommands = function(commands) {
 
 module.exports = Input;
 
-},{"../managers/connection-manager":53,"../objects/player":55}],59:[function(require,module,exports){
+},{"../managers/connection-manager":53,"../objects/player":56}],60:[function(require,module,exports){
 
 var ConnectionManager = require('../managers/connection-manager');
 var Player = require('../objects/player');
+var GameOverlay = require('../objects/game-overlay');
 
 var Test = function(game) {
     Phaser.State.call(this, game);
@@ -7521,10 +7556,10 @@ Test.prototype.create = function() {
     var renderHeight = this.isScreen ? levelHeight : this.game.height;
 
     this.game.world.scale.setTo(this.game.width/renderWidth, this.game.height/renderHeight);
-    
+
     this.game.world.setBounds(0, 0, levelWidth, levelHeight);
     this.game.add.tileSprite(0, -64, levelWidth, levelHeight, 'tex_wall');
-    
+
 
     this.game.cache.addTilemap('map',null,this.settings.map);
     this.tilemap = this.game.add.tilemap('map',32, 32, renderWidth, renderHeight);
@@ -7542,19 +7577,16 @@ Test.prototype.create = function() {
     this.game.input.keyboard.addCallbacks(this, this.inputKeyDown, this.inputKeyUp);
 
     // Disconnect panel...
-    this.overlayPanel = new Phaser.Graphics(this.game, 0, 0);
-    this.overlayPanel.beginFill(0x000000, .75);
-    this.overlayPanel.drawRect(0,0,renderWidth, renderHeight);
-    this.overlayPanel.fixedToCamera = true;
-    this.overlayPanel.visible = false;
-    this.game.add.existing(this.overlayPanel)
+    this.overlayPanel = new GameOverlay(this.game, 0, 0, renderWidth, renderHeight);
+    // this.overlayPanel.visible = false;
+    this.game.add.existing(this.overlayPanel);
 
 
     var that = this;
     ConnectionManager.onUpdate.add(function(data){
-        
+
         if(data.time < this.serverTime) return;
-        
+
         this.serverTime = data.time;
         that.playersCheck(data.data.players);
         that.playersUpdate(data.data.players);
@@ -7582,12 +7614,19 @@ Test.prototype.onStateChange = function(data){
 
     switch(data.state) {
         case 'intro':
+        if (data.mode) {
+            this.overlayPanel.setMessage((data.mode).toUpperCase());
+        }
         this.overlayPanel.visible = true;
         break;
         case 'match':
         this.overlayPanel.visible = false;
         break;
         case 'results':
+        if (data.winner) {
+            this.overlayPanel.setMessage(('Game Over\r' + data.winner + ' Won').toUpperCase());
+            // this.overlayPanel.setMessage(('Game Over\r' + data.winner + ' Won\rWith score of' + data.score).toUpperCase());
+        }
         this.overlayPanel.visible = true;
         break;
     }
@@ -7708,7 +7747,7 @@ Test.prototype.playersUpdate = function(playerModels) {
 
 module.exports = Test;
 
-},{"../managers/connection-manager":53,"../objects/player":55}],60:[function(require,module,exports){
+},{"../managers/connection-manager":53,"../objects/game-overlay":55,"../objects/player":56}],61:[function(require,module,exports){
 'use strict';
 
 var TypeSelect = function(game) {
@@ -7745,9 +7784,9 @@ TypeSelect.prototype.create = function() {
 
 
   // Debug
-  // this.game.state.start('connect', true, false, {
-  //   type: 'screen'
-  // });
+  this.game.state.start('connect', true, false, {
+    type: 'screen'
+  });
 
 };
 

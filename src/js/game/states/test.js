@@ -1,6 +1,7 @@
 
 var ConnectionManager = require('../managers/connection-manager');
 var Player = require('../objects/player');
+var GameOverlay = require('../objects/game-overlay');
 
 var Test = function(game) {
     Phaser.State.call(this, game);
@@ -31,10 +32,10 @@ Test.prototype.create = function() {
     var renderHeight = this.isScreen ? levelHeight : this.game.height;
 
     this.game.world.scale.setTo(this.game.width/renderWidth, this.game.height/renderHeight);
-    
+
     this.game.world.setBounds(0, 0, levelWidth, levelHeight);
     this.game.add.tileSprite(0, -64, levelWidth, levelHeight, 'tex_wall');
-    
+
 
     this.game.cache.addTilemap('map',null,this.settings.map);
     this.tilemap = this.game.add.tilemap('map',32, 32, renderWidth, renderHeight);
@@ -52,19 +53,16 @@ Test.prototype.create = function() {
     this.game.input.keyboard.addCallbacks(this, this.inputKeyDown, this.inputKeyUp);
 
     // Disconnect panel...
-    this.overlayPanel = new Phaser.Graphics(this.game, 0, 0);
-    this.overlayPanel.beginFill(0x000000, .75);
-    this.overlayPanel.drawRect(0,0,renderWidth, renderHeight);
-    this.overlayPanel.fixedToCamera = true;
-    this.overlayPanel.visible = false;
-    this.game.add.existing(this.overlayPanel)
+    this.overlayPanel = new GameOverlay(this.game, 0, 0, renderWidth, renderHeight);
+    // this.overlayPanel.visible = false;
+    this.game.add.existing(this.overlayPanel);
 
 
     var that = this;
     ConnectionManager.onUpdate.add(function(data){
-        
+
         if(data.time < this.serverTime) return;
-        
+
         this.serverTime = data.time;
         that.playersCheck(data.data.players);
         that.playersUpdate(data.data.players);
@@ -92,12 +90,19 @@ Test.prototype.onStateChange = function(data){
 
     switch(data.state) {
         case 'intro':
+        if (data.mode) {
+            this.overlayPanel.setMessage((data.mode).toUpperCase());
+        }
         this.overlayPanel.visible = true;
         break;
         case 'match':
         this.overlayPanel.visible = false;
         break;
         case 'results':
+        if (data.winner) {
+            this.overlayPanel.setMessage(('Game Over\r' + data.winner + ' Won').toUpperCase());
+            // this.overlayPanel.setMessage(('Game Over\r' + data.winner + ' Won\rWith score of' + data.score).toUpperCase());
+        }
         this.overlayPanel.visible = true;
         break;
     }
