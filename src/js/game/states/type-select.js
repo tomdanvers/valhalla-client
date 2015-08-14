@@ -31,7 +31,13 @@ TypeSelect.prototype.create = function() {
   var buttonBoth = this.game.add.button((viewportWidth-buttonWidth)*.5, 100, buttonBMD, this.bothClickHandler, this);
   var buttonScreen = this.game.add.button((viewportWidth-buttonWidth)*.5, 200, buttonBMD, this.screenClickHandler, this);
   var buttonInput = this.game.add.button((viewportWidth-buttonWidth)*.5, 280, buttonBMD, this.inputClickHandler, this);
-  
+
+
+  // Debug
+  // this.game.state.start('connect', true, false, {
+  //   type: 'screen'
+  // });
+
 };
 
 TypeSelect.prototype.bothClickHandler = function() {

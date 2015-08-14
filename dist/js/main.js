@@ -7014,7 +7014,7 @@ game.state.add('input', new Input());
 
 game.state.start('boot');
 
-},{"./states/boot":55,"./states/connect":56,"./states/input":57,"./states/test":58,"./states/type-select":59}],53:[function(require,module,exports){
+},{"./states/boot":56,"./states/connect":57,"./states/input":58,"./states/test":59,"./states/type-select":60}],53:[function(require,module,exports){
 var socket = require('socket.io-client');
 
 var ConnectionManager = function(game) {
@@ -7090,6 +7090,92 @@ ConnectionManager.prototype.onUpdate = function() {
 module.exports = new ConnectionManager();
 
 },{"socket.io-client":1}],54:[function(require,module,exports){
+var CharacterText = function(game, characterName, x, y, width, height) {
+
+  this.bmd = new Phaser.BitmapData(game, width, height);
+
+  this.characterName = characterName.toUpperCase();
+  this.score = 0;
+  this.baseX = x;
+  this.baseY = y;
+
+  Phaser.Sprite.call(this, game, x, y, this.bmd);
+
+  this.render();
+
+};
+
+CharacterText.prototype = Object.create(Phaser.Sprite.prototype);
+CharacterText.prototype.constructor = CharacterText;
+
+CharacterText.prototype.init = function() {
+};
+
+CharacterText.prototype.create = function() {
+};
+
+CharacterText.prototype.setScore = function(score) {
+
+    this.score = score;
+
+    this.render();
+
+};
+
+CharacterText.prototype.render = function() {
+
+    var canvas = this.bmd.canvas;
+    var ctx = this.bmd.ctx;
+
+    var upscaleFactor = window.devicePixelRatio;
+
+    var fontHeight = 13 * upscaleFactor;
+    var fontHeightScore = 24 * upscaleFactor;
+    ctx.textBaseline = 'top';
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = 'white';
+    // ctx.lineWidth = '1';
+    // ctx.strokeStyle = 'white';
+    ctx.font = 'normal normal 700 ' + fontHeight + 'px Arial';
+    ctx.shadowBlur = 5;
+    ctx.shadowColor="black";
+
+    var nameParts = this.characterName.split(' ');
+    var lineCount = nameParts.length;
+
+    var bounds = [];
+    var width = 0;
+    for (var i = 0; i < lineCount; i++) {
+        var bound = ctx.measureText(nameParts[i])
+        bounds.push(bound);
+        width = Math.max(bound.width, width);
+    }
+
+    var width = Math.ceil(width);
+    var height = Math.ceil(fontHeight * lineCount + fontHeightScore);
+    this.bmd.resize(width, height);
+
+    for (var i = 0; i < lineCount; i++) {
+        ctx.fillText(nameParts[i], (width - bounds[i].width)*.5, i*fontHeight);
+    }
+
+    ctx.font = 'normal normal 700 ' + fontHeightScore + 'px Arial';
+    var boundsScore = ctx.measureText(String(this.score));
+    // ctx.strokeText(this.score, (width-boundsScore.width)*.5, fontHeight * 2);
+    ctx.fillText(this.score, (width-boundsScore.width)*.5, fontHeight * lineCount);
+
+    this.width = width / upscaleFactor;
+    this.height = height / upscaleFactor;
+    this.x = -(width/upscaleFactor) * .5;
+    this.y = this.baseY - this.height - 14;
+}
+
+
+module.exports = CharacterText;
+
+},{}],55:[function(require,module,exports){
+var CharacterText = require('./character-text');
+
 var Player = function(game, id, model, isPlayerCharacter, width, height) {
   Phaser.Group.call(this, game, 0, 0);
 
@@ -7124,12 +7210,21 @@ var Player = function(game, id, model, isPlayerCharacter, width, height) {
   this.healthBar = new Phaser.Sprite(game, -width*.5, -height-5, healthBar);
   this.healthBar.anchor.setTo(0, 1);
 
-  this.scoreText = new Phaser.Text(game, 0, -height - 40, model.score);
+  // this.scoreText = new Phaser.Text(game, 0, -height - 40, model.score);
+
+  // var characterTextBMD = new Phaser.BitmapData(game, width, width);
+  // characterTextBMD.ctx.fillStyle = 'red';
+  // characterTextBMD.ctx.fillRect(0,0,width,width);
+
+  // this.characterText = new Phaser.Sprite(game, -width*.5,-height-width,characterTextBMD)
+
+  this.characterText = new CharacterText(game, isPlayerCharacter ? 'YOU' : model.name, -width*.5, -height, width, width)
 
   this.add(this.health);
   this.add(this.healthBar);
   this.add(this.body);
-  this.add(this.scoreText);
+  // this.add(this.scoreText);
+  this.add(this.characterText);
 
   this.id = id;
   this.model = model;
@@ -7152,9 +7247,8 @@ Player.prototype.setScore = function(score) {
     if (score !== this.score) {
 
         this.score = score;
-        this.scoreText.setText(this.score);
-        var bounds = this.scoreText.getBounds();
-        this.scoreText.x = -bounds.width*.5;
+
+        this.characterText.setScore(this.score);
 
     }
 };
@@ -7169,7 +7263,7 @@ Player.prototype.colourToHex = function(c) {
 };
 module.exports = Player;
 
-},{}],55:[function(require,module,exports){
+},{"./character-text":54}],56:[function(require,module,exports){
 'use strict';
 
 var Boot = function(game) {
@@ -7223,7 +7317,7 @@ Boot.prototype.create = function() {
 };
 
 module.exports = Boot;
-},{}],56:[function(require,module,exports){
+},{}],57:[function(require,module,exports){
 var ConnectionManager = require('../managers/connection-manager');
 
 var Connect = function(game) {
@@ -7277,7 +7371,7 @@ Connect.prototype.onConnectError = function(){
 
 module.exports = Connect;
 
-},{"../managers/connection-manager":53}],57:[function(require,module,exports){
+},{"../managers/connection-manager":53}],58:[function(require,module,exports){
 
 var ConnectionManager = require('../managers/connection-manager');
 var Player = require('../objects/player');
@@ -7393,7 +7487,7 @@ Input.prototype.sendCommands = function(commands) {
 
 module.exports = Input;
 
-},{"../managers/connection-manager":53,"../objects/player":54}],58:[function(require,module,exports){
+},{"../managers/connection-manager":53,"../objects/player":55}],59:[function(require,module,exports){
 
 var ConnectionManager = require('../managers/connection-manager');
 var Player = require('../objects/player');
@@ -7614,7 +7708,7 @@ Test.prototype.playersUpdate = function(playerModels) {
 
 module.exports = Test;
 
-},{"../managers/connection-manager":53,"../objects/player":54}],59:[function(require,module,exports){
+},{"../managers/connection-manager":53,"../objects/player":55}],60:[function(require,module,exports){
 'use strict';
 
 var TypeSelect = function(game) {
@@ -7648,7 +7742,13 @@ TypeSelect.prototype.create = function() {
   var buttonBoth = this.game.add.button((viewportWidth-buttonWidth)*.5, 100, buttonBMD, this.bothClickHandler, this);
   var buttonScreen = this.game.add.button((viewportWidth-buttonWidth)*.5, 200, buttonBMD, this.screenClickHandler, this);
   var buttonInput = this.game.add.button((viewportWidth-buttonWidth)*.5, 280, buttonBMD, this.inputClickHandler, this);
-  
+
+
+  // Debug
+  // this.game.state.start('connect', true, false, {
+  //   type: 'screen'
+  // });
+
 };
 
 TypeSelect.prototype.bothClickHandler = function() {
@@ -7673,4 +7773,5 @@ TypeSelect.prototype.update = function() {
 };
 
 module.exports = TypeSelect;
+
 },{}]},{},[51])
