@@ -30,7 +30,7 @@ Connect.prototype.onConnect = function(data) {
 
   } else {
 
-    this.game.state.start('test', true, false, {
+    this.game.state.start('level', true, false, {
         state: data.state,
         isScreen: this.type === 'screen'
     });

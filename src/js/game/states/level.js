@@ -3,19 +3,19 @@ var ConnectionManager = require('../managers/connection-manager');
 var Player = require('../objects/player');
 var GameOverlay = require('../objects/game-overlay');
 
-var Test = function(game) {
+var Level = function(game) {
     Phaser.State.call(this, game);
 }
 
-Test.prototype = Object.create(Phaser.State.prototype);
-Test.prototype.constructor = Test;
+Level.prototype = Object.create(Phaser.State.prototype);
+Level.prototype.constructor = Level;
 
-Test.prototype.init = function(options) {
-    console.log('Test.init(',options,')');
+Level.prototype.init = function(options) {
+    console.log('Level.init(',options,')');
     this.initialState = options.state;
     this.isScreen = options.isScreen;
 }
-Test.prototype.create = function() {
+Level.prototype.create = function() {
 
     this.settings = this.game.cache.getJSON('settings');
 
@@ -60,16 +60,7 @@ Test.prototype.create = function() {
 
 
     var that = this;
-    ConnectionManager.onUpdate.add(function(data){
-
-        if(data.time < this.serverTime) return;
-
-        this.serverTime = data.time;
-        that.playersCheck(data.data.players);
-        that.playersUpdate(data.data.players);
-
-    }, this);
-
+    ConnectionManager.onUpdate.add(this.onUpdate, this);
     ConnectionManager.onDisconnect.add(this.onDisconnect, this);
     ConnectionManager.onReconnect.add(this.onReconnect, this);
     ConnectionManager.onStateChange.add(this.onStateChange, this);
@@ -79,15 +70,15 @@ Test.prototype.create = function() {
     });
 };
 
-Test.prototype.onDisconnect = function(){
+Level.prototype.onDisconnect = function(){
     this.overlayPanel.show();
 };
 
-Test.prototype.onReconnect = function(){
+Level.prototype.onReconnect = function(){
     this.overlayPanel.hide();
 };
 
-Test.prototype.onStateChange = function(data){
+Level.prototype.onStateChange = function(data){
 
     switch(data.state) {
         case 'intro':
@@ -113,34 +104,44 @@ Test.prototype.onStateChange = function(data){
 
 };
 
-Test.prototype.update = function() {
+Level.prototype.onUpdate = function(data) {
+
+    if(data.time < this.serverTime) return;
+
+    this.serverTime = data.time;
+    this.playersCheck(data.data.players);
+    this.playersUpdate(data.data.players);
+
+}
+
+Level.prototype.update = function() {
     if(this.commands.length > 0){
         this.sendCommands(this.commands);
         this.commands.length = 0;
     }
 };
 
-Test.prototype.inputKeyDown = function(event) {
+Level.prototype.inputKeyDown = function(event) {
     if(!this.input[event.keyCode]){
         this.input[event.keyCode] = true;
         this.commands.push('d-'+event.keyCode);
     }
 };
 
-Test.prototype.inputKeyUp = function(event) {
+Level.prototype.inputKeyUp = function(event) {
     if(this.input[event.keyCode]){
         this.input[event.keyCode] = false;
         this.commands.push('u-'+event.keyCode);
     }
 };
 
-Test.prototype.sendCommands = function(commands) {
+Level.prototype.sendCommands = function(commands) {
     ConnectionManager.emit('commands', {time:this.serverTime, data:commands});
 };
 
 // ------------------------------------------------------------------------------------------------------------ PLAYERS CHECK
 
-Test.prototype.playersCheck = function(playerModels) {
+Level.prototype.playersCheck = function(playerModels) {
     var count, i, id, checked = {};
 
     count = this.playerCount
@@ -162,7 +163,7 @@ Test.prototype.playersCheck = function(playerModels) {
     }
 };
 
-Test.prototype.playerCheck = function(playerModel) {
+Level.prototype.playerCheck = function(playerModel) {
     for (var i = this.playerCount - 1; i >= 0; i--) {
         if(this.players[i].id == playerModel.id){
             return 'existing';
@@ -171,7 +172,7 @@ Test.prototype.playerCheck = function(playerModel) {
     return 'new';
 };
 
-Test.prototype.playerAdd = function(id, playerModel) {
+Level.prototype.playerAdd = function(id, playerModel) {
     var isPlayerCharacter = ConnectionManager.sessionId == id;
     var player = new Player(this.game, id, playerModel, isPlayerCharacter, this.settings.player.width, this.settings.player.height);
     this.players.push(player);
@@ -185,22 +186,22 @@ Test.prototype.playerAdd = function(id, playerModel) {
     }
 };
 
-Test.prototype.playerRemove = function(id) {
-var player = this.playersMap[id];
-for (var i = this.playerCount - 1; i >= 0; i--) {
-    if(this.players[i].id == id){
-        this.players.splice(i, 1);
-        break;
-    }
-};
-delete this.playersMap[id];
-player.destroy();
-this.playerCount --;
+Level.prototype.playerRemove = function(id) {
+    var player = this.playersMap[id];
+    for (var i = this.playerCount - 1; i >= 0; i--) {
+        if(this.players[i].id == id){
+            this.players.splice(i, 1);
+            break;
+        }
+    };
+    delete this.playersMap[id];
+    player.destroy();
+    this.playerCount --;
 };
 
 // ----------------------------------------------------------------------------------------------------------- PLAYERS UPDATE
 
-Test.prototype.playersUpdate = function(playerModels) {
+Level.prototype.playersUpdate = function(playerModels) {
     var count = playerModels.length;
     var model, player;
     for (var i = count - 1; i >= 0; i--) {
@@ -221,4 +222,4 @@ Test.prototype.playersUpdate = function(playerModels) {
     this.levelContents.sort('levelY', Phaser.Group.SORT_ASCENDING);
 };
 
-module.exports = Test;
+module.exports = Level;
