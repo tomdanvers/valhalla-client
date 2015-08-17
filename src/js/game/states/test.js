@@ -91,24 +91,24 @@ Test.prototype.onStateChange = function(data){
 
     switch(data.state) {
         case 'intro':
-        if (data.mode) {
-            this.overlayPanel.setMessage((data.mode).toUpperCase());
-        } else {
-            this.overlayPanel.setMessage(('Game Starting...').toUpperCase());
-        }
-        this.overlayPanel.show();
-        break;
+            if (data.mode) {
+                this.overlayPanel.setMessage((data.mode).toUpperCase());
+            } else {
+                this.overlayPanel.setMessage(('Game Starting...').toUpperCase());
+            }
+            this.overlayPanel.show();
+            break;
         case 'match':
-        this.overlayPanel.hide();
-        break;
+            this.overlayPanel.hide();
+            break;
         case 'results':
-        if (data.winner) {
-            this.overlayPanel.setMessage(('Game Over\r' + data.winner + ' Won').toUpperCase());
-        } else {
-            this.overlayPanel.setMessage(('Game Over').toUpperCase());
-        }
-        this.overlayPanel.show();
-        break;
+            if (data.winner) {
+                this.overlayPanel.setMessage(('Game Over\r' + data.winner + ' Won').toUpperCase());
+            } else {
+                this.overlayPanel.setMessage(('Game Over').toUpperCase());
+            }
+            this.overlayPanel.show();
+            break;
     }
 
 };
@@ -167,14 +167,13 @@ Test.prototype.playerCheck = function(playerModel) {
         if(this.players[i].id == playerModel.id){
             return 'existing';
         }
-    };
+    }
     return 'new';
 };
 
 Test.prototype.playerAdd = function(id, playerModel) {
     var isPlayerCharacter = ConnectionManager.sessionId == id;
     var player = new Player(this.game, id, playerModel, isPlayerCharacter, this.settings.player.width, this.settings.player.height);
-    //console.log('ADD:', id, playerModel);
     this.players.push(player);
     this.playersMap[id] = player;
     this.levelContents.add(player);
@@ -183,13 +182,10 @@ Test.prototype.playerAdd = function(id, playerModel) {
     if(isPlayerCharacter && !this.isScreen){
         this.game.camera.follow(player);
         this.playerCharacter = player;
-    }else if(this.playerCharacter !== undefined){
-        //this.levelContents.bringToTop(this.playerCharacter);
     }
 };
 
 Test.prototype.playerRemove = function(id) {
-// console.log('REMOVE:',id);
 var player = this.playersMap[id];
 for (var i = this.playerCount - 1; i >= 0; i--) {
     if(this.players[i].id == id){
