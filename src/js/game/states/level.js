@@ -80,7 +80,6 @@ Level.prototype.onReconnect = function(){
 
 Level.prototype.onStateChange = function(data){
 
-    this.playersRemove();
 
     switch(data.state) {
         case 'intro':
@@ -92,6 +91,7 @@ Level.prototype.onStateChange = function(data){
             this.overlayPanel.show();
             break;
         case 'match':
+            this.playersRemove();
             this.overlayPanel.hide();
             break;
         case 'results':
