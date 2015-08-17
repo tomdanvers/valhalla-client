@@ -10,6 +10,6 @@ game.state.add('boot', new Boot());
 game.state.add('type-select', new TypeSelect());
 game.state.add('connect', new Connect());
 game.state.add('input', new Input());
-game.state.add('level', new Test());
+game.state.add('level', new Level());
 
 game.state.start('boot');

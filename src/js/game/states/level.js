@@ -80,6 +80,8 @@ Level.prototype.onReconnect = function(){
 
 Level.prototype.onStateChange = function(data){
 
+    this.playersRemove();
+
     switch(data.state) {
         case 'intro':
             if (data.mode) {
@@ -197,6 +199,19 @@ Level.prototype.playerRemove = function(id) {
     delete this.playersMap[id];
     player.destroy();
     this.playerCount --;
+};
+
+Level.prototype.playersRemove = function() {
+
+    for (var i = this.playerCount - 1; i >= 0; i--) {
+
+        this.players[i].destroy();
+
+    };
+    this.playersMap = {};
+    this.players = [];
+    this.playerCount = 0;
+
 };
 
 // ----------------------------------------------------------------------------------------------------------- PLAYERS UPDATE
