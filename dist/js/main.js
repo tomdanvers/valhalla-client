@@ -7217,14 +7217,23 @@ module.exports = GameOverlay;
 },{}],56:[function(require,module,exports){
 var CharacterText = require('./character-text');
 
+var TEAM_COLOURS = {
+    'red':'#FF0000',
+    'blue':'#0000FF'
+};
+
 var Player = function(game, id, model, isPlayerCharacter, width, height) {
+
   Phaser.Group.call(this, game, 0, 0);
 
+  var colour = model.alliance ? TEAM_COLOURS[model.alliance] : this.colourToHex(model.colour);
+  colour = this.colourToHex(model.colour);
+
   var body = new Phaser.BitmapData(game, 'body', width, height);
-  body.ctx.fillStyle = isPlayerCharacter ? '#EEEEEE' : this.colourToHex(model.colour);
+  body.ctx.fillStyle = isPlayerCharacter ? '#EEEEEE' : colour;
   body.ctx.fillRect(0, 0, width, height);
   if (isPlayerCharacter) {
-    body.ctx.fillStyle = this.colourToHex(model.colour);
+    body.ctx.fillStyle = colour;
     body.ctx.fillRect(3, 3, width-6, height-6);
   }
   if (model.isNPC) {
