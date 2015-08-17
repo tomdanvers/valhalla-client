@@ -220,12 +220,16 @@ Level.prototype.playersUpdate = function(playerModels) {
     var count = playerModels.length;
     var model, player;
     for (var i = count - 1; i >= 0; i--) {
+
         model = playerModels[i];
+
         player = this.playersMap[model.id];
         player.model = model;
         player.x = player.model.x;
         player.y = player.model.y;
         player.levelY = player.model.levelY;
+        player.visible = !(player.model.lives === 0);
+
         if(player === this.playerCharacter){
             player.previousX = player.x;
             player.previousY = player.y;
@@ -233,6 +237,7 @@ Level.prototype.playersUpdate = function(playerModels) {
         player.setFacing(player.model.facing);
         player.setHealthValue(player.model.health/this.settings.player.healthMax);
         player.setScore(player.model.score);
+
     };
     this.levelContents.sort('levelY', Phaser.Group.SORT_ASCENDING);
 };

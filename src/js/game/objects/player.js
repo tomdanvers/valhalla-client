@@ -13,11 +13,14 @@ var Player = function(game, id, model, isPlayerCharacter, width, height) {
   // colour = this.colourToHex(model.colour);
 
   var body = new Phaser.BitmapData(game, 'body', width, height);
-  body.ctx.fillStyle = isPlayerCharacter ? '#EEEEEE' : colour;
-  body.ctx.fillRect(0, 0, width, height);
   if (isPlayerCharacter) {
-    body.ctx.fillStyle = colour;
+    body.ctx.fillStyle = '#EEEEEE';
+    body.ctx.fillRect(0, 0, width, height);
+    body.ctx.fillStyle = model.alliance ? colour : '#00FF00';
     body.ctx.fillRect(3, 3, width-6, height-6);
+  } else {
+    body.ctx.fillStyle = colour;
+    body.ctx.fillRect(0, 0, width, height);
   }
   if (model.isNPC) {
     body.ctx.fillStyle = '#555555';
