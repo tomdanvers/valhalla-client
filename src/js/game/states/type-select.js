@@ -1,3 +1,5 @@
+var TextButton = require('../objects/text-button');
+
 'use strict';
 
 var TypeSelect = function(game) {
@@ -18,19 +20,15 @@ TypeSelect.prototype.preload = function() {
 TypeSelect.prototype.create = function() {
   console.log('TypeSelect.create()');
 
-  var buttonWidth = 200;
+  var buttonWidth = 400;
   var buttonHeight = 60;
-
-  var buttonBMD = new Phaser.BitmapData(this.game, 'button', buttonWidth, buttonHeight);
-  buttonBMD.ctx.fillStyle='red';
-  buttonBMD.ctx.fillRect(0, 0, buttonWidth, buttonHeight);
 
   var viewportWidth = this.game.width;
   var viewportHeight = this.game.height;
 
-  var buttonBoth = this.game.add.button((viewportWidth-buttonWidth)*.5, 100, buttonBMD, this.bothClickHandler, this);
-  var buttonScreen = this.game.add.button((viewportWidth-buttonWidth)*.5, 200, buttonBMD, this.screenClickHandler, this);
-  var buttonInput = this.game.add.button((viewportWidth-buttonWidth)*.5, 280, buttonBMD, this.inputClickHandler, this);
+  var buttonBoth = this.game.add.existing(new TextButton(this.game, buttonWidth, buttonHeight, (viewportWidth-buttonWidth)*.5, 100, 'Normal', this.bothClickHandler, this));
+  var buttonScreen = this.game.add.existing(new TextButton(this.game, buttonWidth, buttonHeight, (viewportWidth-buttonWidth)*.5, 200, 'Screen Only', this.screenClickHandler, this));
+  var buttonInput = this.game.add.existing(new TextButton(this.game, buttonWidth, buttonHeight, (viewportWidth-buttonWidth)*.5, 280, 'Input Only', this.inputClickHandler, this));
 
 
   // Debug

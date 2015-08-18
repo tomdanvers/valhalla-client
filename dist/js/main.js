@@ -7014,7 +7014,7 @@ game.state.add('level', new Level());
 
 game.state.start('boot');
 
-},{"./states/boot":57,"./states/connect":58,"./states/input":59,"./states/level":60,"./states/type-select":61}],53:[function(require,module,exports){
+},{"./states/boot":58,"./states/connect":59,"./states/input":60,"./states/level":61,"./states/type-select":62}],53:[function(require,module,exports){
 var socket = require('socket.io-client');
 
 var ConnectionManager = function(game) {
@@ -7317,6 +7317,42 @@ Player.prototype.colourToHex = function(c) {
 module.exports = Player;
 
 },{"./character-text":54}],57:[function(require,module,exports){
+var TextButton = function(game, width, height, x, y, label, clickCallback, clickContext) {
+
+  Phaser.Group.call(this, game, 0, 0);
+
+  var buttonBMD = new Phaser.BitmapData(this.game, 'button', width, height);
+  var ctx = buttonBMD.ctx;
+
+  ctx.fillStyle = 'grey';
+  ctx.fillRect(0, 0, width, height);
+
+  label = label.toUpperCase();
+
+  var upscaleFactor = window.devicePixelRatio;
+  var fontHeight = 18 * upscaleFactor;
+
+  ctx.textBaseline = 'top';
+  ctx.fillStyle = 'white';
+  ctx.font = 'normal normal 700 ' + fontHeight + 'px Arial';
+  var bounds = ctx.measureText(label);
+  ctx.fillText(label, (width - bounds.width) * .5, (height - fontHeight) * .5);
+
+  this.add(new Phaser.Button(this.game, x, y, buttonBMD, clickCallback, clickContext));
+
+};
+
+TextButton.prototype = Object.create(Phaser.Group.prototype);
+TextButton.prototype.constructor = TextButton;
+
+TextButton.prototype.init = function() {
+
+
+};
+
+module.exports = TextButton;
+
+},{}],58:[function(require,module,exports){
 'use strict';
 
 var Boot = function(game) {
@@ -7370,7 +7406,7 @@ Boot.prototype.create = function() {
 };
 
 module.exports = Boot;
-},{}],58:[function(require,module,exports){
+},{}],59:[function(require,module,exports){
 var ConnectionManager = require('../managers/connection-manager');
 
 var Connect = function(game) {
@@ -7424,7 +7460,7 @@ Connect.prototype.onConnectError = function(){
 
 module.exports = Connect;
 
-},{"../managers/connection-manager":53}],59:[function(require,module,exports){
+},{"../managers/connection-manager":53}],60:[function(require,module,exports){
 
 var ConnectionManager = require('../managers/connection-manager');
 var Player = require('../objects/player');
@@ -7540,7 +7576,7 @@ Input.prototype.sendCommands = function(commands) {
 
 module.exports = Input;
 
-},{"../managers/connection-manager":53,"../objects/player":56}],60:[function(require,module,exports){
+},{"../managers/connection-manager":53,"../objects/player":56}],61:[function(require,module,exports){
 
 var ConnectionManager = require('../managers/connection-manager');
 var Player = require('../objects/player');
@@ -7787,7 +7823,9 @@ Level.prototype.playersUpdate = function(playerModels) {
 
 module.exports = Level;
 
-},{"../managers/connection-manager":53,"../objects/game-overlay":55,"../objects/player":56}],61:[function(require,module,exports){
+},{"../managers/connection-manager":53,"../objects/game-overlay":55,"../objects/player":56}],62:[function(require,module,exports){
+var TextButton = require('../objects/text-button');
+
 'use strict';
 
 var TypeSelect = function(game) {
@@ -7808,19 +7846,15 @@ TypeSelect.prototype.preload = function() {
 TypeSelect.prototype.create = function() {
   console.log('TypeSelect.create()');
 
-  var buttonWidth = 200;
+  var buttonWidth = 400;
   var buttonHeight = 60;
-
-  var buttonBMD = new Phaser.BitmapData(this.game, 'button', buttonWidth, buttonHeight);
-  buttonBMD.ctx.fillStyle='red';
-  buttonBMD.ctx.fillRect(0, 0, buttonWidth, buttonHeight);
 
   var viewportWidth = this.game.width;
   var viewportHeight = this.game.height;
 
-  var buttonBoth = this.game.add.button((viewportWidth-buttonWidth)*.5, 100, buttonBMD, this.bothClickHandler, this);
-  var buttonScreen = this.game.add.button((viewportWidth-buttonWidth)*.5, 200, buttonBMD, this.screenClickHandler, this);
-  var buttonInput = this.game.add.button((viewportWidth-buttonWidth)*.5, 280, buttonBMD, this.inputClickHandler, this);
+  var buttonBoth = this.game.add.existing(new TextButton(this.game, buttonWidth, buttonHeight, (viewportWidth-buttonWidth)*.5, 100, 'Normal', this.bothClickHandler, this));
+  var buttonScreen = this.game.add.existing(new TextButton(this.game, buttonWidth, buttonHeight, (viewportWidth-buttonWidth)*.5, 200, 'Screen Only', this.screenClickHandler, this));
+  var buttonInput = this.game.add.existing(new TextButton(this.game, buttonWidth, buttonHeight, (viewportWidth-buttonWidth)*.5, 280, 'Input Only', this.inputClickHandler, this));
 
 
   // Debug
@@ -7853,4 +7887,4 @@ TypeSelect.prototype.update = function() {
 
 module.exports = TypeSelect;
 
-},{}]},{},[51])
+},{"../objects/text-button":57}]},{},[51])
