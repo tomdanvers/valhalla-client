@@ -25,12 +25,16 @@ Connect.prototype.onConnect = function(data) {
   if (this.type === 'input') {
 
     this.game.state.start('input', true, false, {
-        state: data.state
+        mode: data.mode,
+        map: data.map,
+        state: data.state,
     });
 
   } else {
 
     this.game.state.start('level', true, false, {
+        mode: data.mode,
+        map: data.map,
         state: data.state,
         isScreen: this.type === 'screen'
     });

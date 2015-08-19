@@ -13,6 +13,7 @@ Level.prototype.constructor = Level;
 Level.prototype.init = function(options) {
     console.log('Level.init(',options,')');
     this.initialState = options.state;
+    this.mapId = options.map;
     this.isScreen = options.isScreen;
 }
 Level.prototype.create = function() {
@@ -25,8 +26,18 @@ Level.prototype.create = function() {
 
     this.input = {};// Used to prevent uneccessary commands from being sent
 
-    var levelWidth = this.settings.map.width*32;
-    var levelHeight = this.settings.map.height*32;
+    for (var i = 0; i < this.settings.maps.length; i++) {
+        if (this.settings.maps[i].id === this.mapId) {
+            this.map = this.settings.maps[i];
+        }
+    }
+
+    if (this.map === undefined) {
+        console.warn('No map with id',this.mapId);
+    }
+
+    var levelWidth = this.map.width*32;
+    var levelHeight = this.map.height*32;
 
     var renderWidth = this.isScreen ? levelWidth : this.game.width;
     var renderHeight = this.isScreen ? levelHeight : this.game.height;
@@ -37,7 +48,7 @@ Level.prototype.create = function() {
     this.game.add.tileSprite(0, -64, levelWidth, levelHeight, 'tex_wall');
 
 
-    this.game.cache.addTilemap('map',null,this.settings.map);
+    this.game.cache.addTilemap('map', null, this.map);
     this.tilemap = this.game.add.tilemap('map',32, 32, renderWidth, renderHeight);
     this.tilemap.addTilesetImage('tiles', 'tiles');
 
@@ -66,6 +77,7 @@ Level.prototype.create = function() {
     ConnectionManager.onStateChange.add(this.onStateChange, this);
 
     this.onStateChange({
+        map: this.mapId,
         state: this.initialState
     });
 };
@@ -80,6 +92,18 @@ Level.prototype.onReconnect = function(){
 
 Level.prototype.onStateChange = function(data){
 
+    console.log('Level.onStateChange', data);
+
+    if (data.map !== this.map.id) {
+
+        this.game.state.start('level', true, false, {
+            mode: data.mode,
+            map: data.map,
+            state: data.state,
+            isScreen: this.isScreen
+        });
+
+    }
 
     switch(data.state) {
         case 'intro':
@@ -225,6 +249,9 @@ Level.prototype.playersUpdate = function(playerModels) {
 
         player = this.playersMap[model.id];
         player.model = model;
+        if (player.model.justAttacked) {
+            player.attack();
+        }
         player.x = player.model.x;
         player.y = player.model.y;
         player.levelY = player.model.levelY;

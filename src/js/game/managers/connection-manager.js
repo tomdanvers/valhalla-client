@@ -19,21 +19,21 @@ ConnectionManager.prototype.constructor = ConnectionManager;
 ConnectionManager.prototype.connect = function(type) {
     var that = this;
     this.socket = socket(environment.server);
-    
+
     this.socket.on('connecting', this.onConnecting.dispatch);
-    
+
     this.socket.on('connect_failed', this.onConnectFailed.dispatch);
-    
+
     this.socket.on('error', this.onConnectError.dispatch);
 
     this.socket.on('connect', function () {
-        
+
         that.sessionId = that.socket.io.engine.id;
-        
+
         that.socket.emit('handshake', {
             type: type
         });
-        
+
         that.socket.on('connected', function (data) {
             that.onConnect.dispatch(data);
         });
@@ -41,18 +41,18 @@ ConnectionManager.prototype.connect = function(type) {
     });
 
     this.socket.on('disconnect', this.onDisconnect.dispatch);
-    
+
     this.socket.on('reconnect', this.onReconnect.dispatch);
-    
+
     this.socket.on('mode:state:current', function (data) {
-        console.log('CURRENT STATE', data);
+        console.log('ConnectionManager.currentState(', data, ')');
         that.onStateChange.dispatch(data);
     });
-    
+
     this.socket.on('mode:state:change', function (data) {
         that.onStateChange.dispatch(data);
     });
-    
+
     this.socket.on('update', function (data) {
         that.onUpdate.dispatch(data);
     });

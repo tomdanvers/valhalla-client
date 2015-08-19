@@ -7004,15 +7004,22 @@ var Connect = require('./states/connect');
 var Level = require('./states/level');
 var Input = require('./states/input');
 
-var game = new Phaser.Game(1280, 720, Phaser.AUTO, 'valhalla');
+var game = new Phaser.Game(1280, 720, Phaser.AUTO, 'valhalla', {preload: preload});
 
-game.state.add('boot', new Boot());
-game.state.add('type-select', new TypeSelect());
-game.state.add('connect', new Connect());
-game.state.add('input', new Input());
-game.state.add('level', new Level());
+function preload() {
 
-game.state.start('boot');
+    game.stage.disableVisibilityChange = true;
+
+    game.state.add('boot', new Boot());
+    game.state.add('type-select', new TypeSelect());
+    game.state.add('connect', new Connect());
+    game.state.add('input', new Input());
+    game.state.add('level', new Level());
+
+    game.state.start('boot');
+
+}
+
 
 },{"./states/boot":58,"./states/connect":59,"./states/input":60,"./states/level":61,"./states/type-select":62}],53:[function(require,module,exports){
 var socket = require('socket.io-client');
@@ -7036,21 +7043,21 @@ ConnectionManager.prototype.constructor = ConnectionManager;
 ConnectionManager.prototype.connect = function(type) {
     var that = this;
     this.socket = socket(environment.server);
-    
+
     this.socket.on('connecting', this.onConnecting.dispatch);
-    
+
     this.socket.on('connect_failed', this.onConnectFailed.dispatch);
-    
+
     this.socket.on('error', this.onConnectError.dispatch);
 
     this.socket.on('connect', function () {
-        
+
         that.sessionId = that.socket.io.engine.id;
-        
+
         that.socket.emit('handshake', {
             type: type
         });
-        
+
         that.socket.on('connected', function (data) {
             that.onConnect.dispatch(data);
         });
@@ -7058,18 +7065,18 @@ ConnectionManager.prototype.connect = function(type) {
     });
 
     this.socket.on('disconnect', this.onDisconnect.dispatch);
-    
+
     this.socket.on('reconnect', this.onReconnect.dispatch);
-    
+
     this.socket.on('mode:state:current', function (data) {
-        console.log('CURRENT STATE', data);
+        console.log('ConnectionManager.currentState(', data, ')');
         that.onStateChange.dispatch(data);
     });
-    
+
     this.socket.on('mode:state:change', function (data) {
         that.onStateChange.dispatch(data);
     });
-    
+
     this.socket.on('update', function (data) {
         that.onUpdate.dispatch(data);
     });
@@ -7224,63 +7231,66 @@ var TEAM_COLOURS = {
 
 var Player = function(game, id, model, isPlayerCharacter, width, height) {
 
-  Phaser.Group.call(this, game, 0, 0);
+    Phaser.Group.call(this, game, 0, 0);
 
-  var colour = model.alliance ? TEAM_COLOURS[model.alliance] : this.colourToHex(model.colour);
-  // colour = this.colourToHex(model.colour);
+    var colour = model.alliance ? TEAM_COLOURS[model.alliance] : this.colourToHex(model.colour);
 
-  var body = new Phaser.BitmapData(game, 'body', width, height);
-  if (isPlayerCharacter) {
-    body.ctx.fillStyle = '#EEEEEE';
-    body.ctx.fillRect(0, 0, width, height);
-    body.ctx.fillStyle = model.alliance ? colour : '#00FF00';
-    body.ctx.fillRect(3, 3, width-6, height-6);
-  } else {
-    body.ctx.fillStyle = colour;
-    body.ctx.fillRect(0, 0, width, height);
-  }
-  if (model.isNPC) {
-    body.ctx.fillStyle = '#555555';
-  }else {
-    body.ctx.fillStyle = '#880000';
-  }
+    var body = new Phaser.BitmapData(game, 'body', width, height);
+    if (isPlayerCharacter) {
+        body.ctx.fillStyle = '#EEEEEE';
+        body.ctx.fillRect(0, 0, width, height);
+        body.ctx.fillStyle = model.alliance ? colour : '#00FF00';
+        body.ctx.fillRect(3, 3, width-6, height-6);
+    } else {
+        body.ctx.fillStyle = colour;
+        body.ctx.fillRect(0, 0, width, height);
+    }
+    if (model.isNPC) {
+        body.ctx.fillStyle = '#555555';
+    }else {
+        body.ctx.fillStyle = '#880000';
+    }
     body.ctx.fillRect(width - 30, 5, 30, 15);
 
-  this.body = new Phaser.Sprite(game, 0, 0, body);
-  this.body.anchor.setTo(.5, 1)
+    this.body = new Phaser.Sprite(game, 0, 0, body);
+    this.body.anchor.setTo(.5, 1)
 
-  var health = new Phaser.BitmapData(game, 'health', width, 5);
-  health.ctx.fillStyle = '#FF0000';
-  health.ctx.fillRect(0, 0, width, 5);
 
-  this.health = new Phaser.Sprite(game, 0, -height-5, health);
-  this.health.anchor.setTo(.5, 1);
+    var axe = new Phaser.BitmapData(game, 'axe', width, height);
+    axe.ctx.fillStyle = '#555555';
+    axe.ctx.beginPath();
+    axe.ctx.arc(width*.75, height*.45, width*.2, 0, Math.PI*2);
+    axe.ctx.fill();
 
-  var healthBar = new Phaser.BitmapData(game, 'healthBar', width, 5);
-  healthBar.ctx.fillStyle = '#00FF00';
-  healthBar.ctx.fillRect(0, 0, width, 5);
+    this.axe = new Phaser.Sprite(game, 0, 0, axe);
+    this.axe.anchor.setTo(.5, 1)
 
-  this.healthBar = new Phaser.Sprite(game, -width*.5, -height-5, healthBar);
-  this.healthBar.anchor.setTo(0, 1);
+    var health = new Phaser.BitmapData(game, 'health', width, 5);
+    health.ctx.fillStyle = '#FF0000';
+    health.ctx.fillRect(0, 0, width, 5);
 
-  // this.scoreText = new Phaser.Text(game, 0, -height - 40, model.score);
+    this.health = new Phaser.Sprite(game, 0, -height-5, health);
+    this.health.anchor.setTo(.5, 1);
 
-  // var characterTextBMD = new Phaser.BitmapData(game, width, width);
-  // characterTextBMD.ctx.fillStyle = 'red';
-  // characterTextBMD.ctx.fillRect(0,0,width,width);
+    var healthBar = new Phaser.BitmapData(game, 'healthBar', width, 5);
+    healthBar.ctx.fillStyle = '#00FF00';
+    healthBar.ctx.fillRect(0, 0, width, 5);
 
-  // this.characterText = new Phaser.Sprite(game, -width*.5,-height-width,characterTextBMD)
+    this.healthBar = new Phaser.Sprite(game, -width*.5, -height-5, healthBar);
+    this.healthBar.anchor.setTo(0, 1);
 
-  this.characterText = new CharacterText(game, isPlayerCharacter ? 'YOU' : model.name, -width*.5, -height, width, width)
+    this.characterText = new CharacterText(game, isPlayerCharacter ? 'YOU' : model.name, -width*.5, -height, width, width)
 
-  this.add(this.health);
-  this.add(this.healthBar);
-  this.add(this.body);
-  // this.add(this.scoreText);
-  this.add(this.characterText);
+    this.add(this.health);
+    this.add(this.healthBar);
+    this.add(this.body);
+    this.body.addChild(this.axe);
 
-  this.id = id;
-  this.model = model;
+    this.add(this.characterText);
+
+    this.id = id;
+    this.model = model;
+    this.justAttacked = false;
 };
 
 Player.prototype = Object.create(Phaser.Group.prototype);
@@ -7292,8 +7302,12 @@ Player.prototype.init = function() {
 Player.prototype.create = function() {
 };
 
+Player.prototype.update = function() {
+    this.axe.rotation *= .9;
+};
+
 Player.prototype.setHealthValue = function(healthValue) {
-  this.healthBar.scale.setTo(healthValue, 1);
+    this.healthBar.scale.setTo(healthValue, 1);
 };
 
 Player.prototype.setScore = function(score) {
@@ -7306,14 +7320,19 @@ Player.prototype.setScore = function(score) {
     }
 };
 
+Player.prototype.attack = function() {
+    this.axe.rotation = Math.PI*.2
+};
+
 Player.prototype.setFacing = function(facing) {
-  this.body.scale.x = facing;
+    this.body.scale.x = facing;
 };
 
 Player.prototype.colourToHex = function(c) {
-  var hex = c.toString(16);
-  return '#' + hex;
+    var hex = c.toString(16);
+    return '#' + hex;
 };
+
 module.exports = Player;
 
 },{"./character-text":54}],57:[function(require,module,exports){
@@ -7434,12 +7453,16 @@ Connect.prototype.onConnect = function(data) {
   if (this.type === 'input') {
 
     this.game.state.start('input', true, false, {
-        state: data.state
+        mode: data.mode,
+        map: data.map,
+        state: data.state,
     });
 
   } else {
 
     this.game.state.start('level', true, false, {
+        mode: data.mode,
+        map: data.map,
         state: data.state,
         isScreen: this.type === 'screen'
     });
@@ -7592,6 +7615,7 @@ Level.prototype.constructor = Level;
 Level.prototype.init = function(options) {
     console.log('Level.init(',options,')');
     this.initialState = options.state;
+    this.mapId = options.map;
     this.isScreen = options.isScreen;
 }
 Level.prototype.create = function() {
@@ -7604,8 +7628,18 @@ Level.prototype.create = function() {
 
     this.input = {};// Used to prevent uneccessary commands from being sent
 
-    var levelWidth = this.settings.map.width*32;
-    var levelHeight = this.settings.map.height*32;
+    for (var i = 0; i < this.settings.maps.length; i++) {
+        if (this.settings.maps[i].id === this.mapId) {
+            this.map = this.settings.maps[i];
+        }
+    }
+
+    if (this.map === undefined) {
+        console.warn('No map with id',this.mapId);
+    }
+
+    var levelWidth = this.map.width*32;
+    var levelHeight = this.map.height*32;
 
     var renderWidth = this.isScreen ? levelWidth : this.game.width;
     var renderHeight = this.isScreen ? levelHeight : this.game.height;
@@ -7616,7 +7650,7 @@ Level.prototype.create = function() {
     this.game.add.tileSprite(0, -64, levelWidth, levelHeight, 'tex_wall');
 
 
-    this.game.cache.addTilemap('map',null,this.settings.map);
+    this.game.cache.addTilemap('map', null, this.map);
     this.tilemap = this.game.add.tilemap('map',32, 32, renderWidth, renderHeight);
     this.tilemap.addTilesetImage('tiles', 'tiles');
 
@@ -7645,6 +7679,7 @@ Level.prototype.create = function() {
     ConnectionManager.onStateChange.add(this.onStateChange, this);
 
     this.onStateChange({
+        map: this.mapId,
         state: this.initialState
     });
 };
@@ -7659,6 +7694,18 @@ Level.prototype.onReconnect = function(){
 
 Level.prototype.onStateChange = function(data){
 
+    console.log('Level.onStateChange', data);
+
+    if (data.map !== this.map.id) {
+
+        this.game.state.start('level', true, false, {
+            mode: data.mode,
+            map: data.map,
+            state: data.state,
+            isScreen: this.isScreen
+        });
+
+    }
 
     switch(data.state) {
         case 'intro':
@@ -7804,6 +7851,9 @@ Level.prototype.playersUpdate = function(playerModels) {
 
         player = this.playersMap[model.id];
         player.model = model;
+        if (player.model.justAttacked) {
+            player.attack();
+        }
         player.x = player.model.x;
         player.y = player.model.y;
         player.levelY = player.model.levelY;
@@ -7836,15 +7886,12 @@ TypeSelect.prototype = Object.create(Phaser.State.prototype);
 TypeSelect.prototype.constructor = TypeSelect;
 
 TypeSelect.prototype.init = function() {
-  console.log('TypeSelect.init()');
 };
 
 TypeSelect.prototype.preload = function() {
-  console.log('TypeSelect.preload()');
 };
 
 TypeSelect.prototype.create = function() {
-  console.log('TypeSelect.create()');
 
   var buttonWidth = 400;
   var buttonHeight = 60;

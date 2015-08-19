@@ -10,15 +10,12 @@ TypeSelect.prototype = Object.create(Phaser.State.prototype);
 TypeSelect.prototype.constructor = TypeSelect;
 
 TypeSelect.prototype.init = function() {
-  console.log('TypeSelect.init()');
 };
 
 TypeSelect.prototype.preload = function() {
-  console.log('TypeSelect.preload()');
 };
 
 TypeSelect.prototype.create = function() {
-  console.log('TypeSelect.create()');
 
   var buttonWidth = 400;
   var buttonHeight = 60;
