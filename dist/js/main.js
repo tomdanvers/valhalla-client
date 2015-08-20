@@ -7069,11 +7069,12 @@ ConnectionManager.prototype.connect = function(type) {
     this.socket.on('reconnect', this.onReconnect.dispatch);
 
     this.socket.on('mode:state:current', function (data) {
-        console.log('ConnectionManager.currentState(', data, ')');
+        // console.log('ConnectionManager.currentState(', data, ')');
         that.onStateChange.dispatch(data);
     });
 
     this.socket.on('mode:state:change', function (data) {
+        // console.log('ConnectionManager.changeState(', data, ')');
         that.onStateChange.dispatch(data);
     });
 
@@ -7613,10 +7614,12 @@ Level.prototype = Object.create(Phaser.State.prototype);
 Level.prototype.constructor = Level;
 
 Level.prototype.init = function(options) {
-    console.log('Level.init(',options,')');
+
     this.initialState = options.state;
+    this.initialMode = options.mode;
     this.mapId = options.map;
     this.isScreen = options.isScreen;
+
 }
 Level.prototype.create = function() {
 
@@ -7680,6 +7683,7 @@ Level.prototype.create = function() {
 
     this.onStateChange({
         map: this.mapId,
+        mode: this.initialMode,
         state: this.initialState
     });
 };
@@ -7694,7 +7698,6 @@ Level.prototype.onReconnect = function(){
 
 Level.prototype.onStateChange = function(data){
 
-    console.log('Level.onStateChange', data);
 
     if (data.map !== this.map.id) {
 

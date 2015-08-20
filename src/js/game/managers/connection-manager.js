@@ -45,11 +45,12 @@ ConnectionManager.prototype.connect = function(type) {
     this.socket.on('reconnect', this.onReconnect.dispatch);
 
     this.socket.on('mode:state:current', function (data) {
-        console.log('ConnectionManager.currentState(', data, ')');
+        // console.log('ConnectionManager.currentState(', data, ')');
         that.onStateChange.dispatch(data);
     });
 
     this.socket.on('mode:state:change', function (data) {
+        // console.log('ConnectionManager.changeState(', data, ')');
         that.onStateChange.dispatch(data);
     });
 
