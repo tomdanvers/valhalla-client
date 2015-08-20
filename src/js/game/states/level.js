@@ -121,8 +121,9 @@ Level.prototype.onStateChange = function(data){
             this.overlayPanel.hide();
             break;
         case 'results':
-            if (data.winner) {
-                this.overlayPanel.setMessage(('Game Over\r' + data.winner + ' Won').toUpperCase());
+            if (data.winnerName) {
+                var name = data.winnerId === ConnectionManager.sessionId ? 'You' : data.winnerName;
+                this.overlayPanel.setMessage(('Game Over\r' + name + ' Won').toUpperCase());
             } else {
                 this.overlayPanel.setMessage(('Game Over').toUpperCase());
             }
